@@ -7,6 +7,20 @@ const middleware = async (req: NextRequest) => {
   // Debug: log route and token value
   console.log("[MIDDLEWARE] Path:", req.nextUrl.pathname);
   console.log("[MIDDLEWARE] token cookie:", token);
+  
+  // Redirect /admin to /dashboard
+  if (req.nextUrl.pathname.startsWith("/admin")) {
+    const newPath = req.nextUrl.pathname.replace("/admin", "/dashboard");
+    console.log("[MIDDLEWARE] Redirecting /admin to /dashboard:", newPath);
+    return NextResponse.redirect(new URL(newPath, req.url));
+  }
+  
+  // Temporary: Skip authentication for development testing
+  if (process.env.NODE_ENV === 'development' && req.nextUrl.pathname.startsWith("/dashboard")) {
+    console.log("[MIDDLEWARE] Development mode - skipping authentication for dashboard");
+    return NextResponse.next();
+  }
+  
   const isAuthPage = AUTH_PATHS.some((p) => req.nextUrl.pathname.startsWith(p));
 
   // If token exists, validate it
@@ -85,5 +99,5 @@ const middleware = async (req: NextRequest) => {
 export default middleware;
 
 export const config = {
-  matcher: ["/dashboard", "/login", "/forgot-password","/dashboard/:path*"],
+  matcher: ["/dashboard", "/admin", "/login", "/forgot-password", "/dashboard/:path*", "/admin/:path*"],
 };
