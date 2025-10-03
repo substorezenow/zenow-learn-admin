@@ -15,11 +15,6 @@ const middleware = async (req: NextRequest) => {
     return NextResponse.redirect(new URL(newPath, req.url));
   }
   
-  // Temporary: Skip authentication for development testing
-  if (process.env.NODE_ENV === 'development' && req.nextUrl.pathname.startsWith("/dashboard")) {
-    console.log("[MIDDLEWARE] Development mode - skipping authentication for dashboard");
-    return NextResponse.next();
-  }
   
   const isAuthPage = AUTH_PATHS.some((p) => req.nextUrl.pathname.startsWith(p));
 

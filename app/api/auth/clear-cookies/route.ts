@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  // Clear ALL authentication cookies
+export async function POST() {
   const response = NextResponse.json({ success: true });
   
-  // Clear all possible cookie names that might contain tokens
+  // Clear all possible cookie names
   const cookieNames = [
     'token',
     'admin_access_token', 
     'auth_token',
     'jwt',
-    'access_token'
+    'access_token',
+    'sidebar:state'
   ];
   
   cookieNames.forEach(name => {

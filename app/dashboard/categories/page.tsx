@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import adminApiService from '../../../src/services/adminApi';
 import CategoryForm from '../components/CategoryForm';
@@ -13,10 +13,20 @@ export default function CategoriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<number | null>(null);
+  const [togglingCategoryId, setTogglingCategoryId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const fetchCategories = async () => {
     try {
@@ -38,21 +48,26 @@ export default function CategoriesPage() {
   const handleDeleteCategory = async (id: number) => {
     if (!confirm('Are you sure you want to delete this category?')) return;
 
+    setDeletingCategoryId(id);
     try {
       const response = await adminApiService.deleteCategory(id);
       if (response.success) {
         setCategories(categories.filter(cat => cat.id !== id));
+        setToast({ message: 'Category deleted successfully', type: 'success' });
       } else {
-        alert('Failed to delete category');
+        setToast({ message: 'Failed to delete category', type: 'error' });
       }
     } catch (err) {
       console.error('Error deleting category:', err);
-      alert('Error deleting category');
+      setToast({ message: 'Error deleting category', type: 'error' });
+    } finally {
+      setDeletingCategoryId(null);
     }
   };
 
   const handleToggleActive = async (category: Category) => {
     try {
+      setTogglingCategoryId(category.id);
       const response = await adminApiService.updateCategory(category.id, {
         ...category,
         is_active: !category.is_active
@@ -62,12 +77,15 @@ export default function CategoriesPage() {
         setCategories(categories.map(cat => 
           cat.id === category.id ? { ...cat, is_active: !cat.is_active } : cat
         ));
+        setToast({ message: `Category ${!category.is_active ? 'activated' : 'deactivated'} successfully`, type: 'success' });
       } else {
-        alert('Failed to update category');
+        setToast({ message: 'Failed to update category', type: 'error' });
       }
     } catch (err) {
       console.error('Error updating category:', err);
-      alert('Error updating category');
+      setToast({ message: 'Error updating category', type: 'error' });
+    } finally {
+      setTogglingCategoryId(null);
     }
   };
 
@@ -110,20 +128,22 @@ export default function CategoriesPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-gray-900">Categories Management</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
         >
-          <Plus className="w-4 h-4" />
-          Add Category
+          <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
+          <span className="font-semibold">Add Category</span>
+          <div className="absolute inset-0 bg-white rounded-lg opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
         </button>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Category
@@ -146,22 +166,26 @@ export default function CategoriesPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {categories.map((category) => (
-              <tr key={category.id} className="hover:bg-gray-50">
+            {categories.map((category, index) => (
+              <tr 
+                key={category.id} 
+                className="group hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 hover:shadow-sm border-b border-gray-100 hover:border-gray-200"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
+                    <div className="flex-shrink-0 h-10 w-10 group-hover:scale-105 transition-transform duration-200">
                       {category.icon_url ? (
                         <Image 
-                          className="h-10 w-10 rounded-full" 
+                          className="h-10 w-10 rounded-full shadow-sm group-hover:shadow-md transition-shadow duration-200" 
                           src={category.icon_url} 
                           alt={category.name}
                           width={40}
                           height={40}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <span className="text-gray-600 font-medium">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                          <span className="text-gray-600 font-medium group-hover:text-gray-700 transition-colors duration-200">
                             {category.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
@@ -179,21 +203,29 @@ export default function CategoriesPage() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => handleToggleActive(category)}
-                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      category.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                    disabled={togglingCategoryId === category.id}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
+                      togglingCategoryId === category.id
+                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        : category.is_active
+                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                        : 'bg-red-100 text-red-800 hover:bg-red-200'
                     }`}
                   >
-                    {category.is_active ? (
+                    {togglingCategoryId === category.id ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Updating...</span>
+                      </>
+                    ) : category.is_active ? (
                       <>
                         <Eye className="w-3 h-3" />
-                        Active
+                        <span>Active</span>
                       </>
                     ) : (
                       <>
                         <EyeOff className="w-3 h-3" />
-                        Inactive
+                        <span>Inactive</span>
                       </>
                     )}
                   </button>
@@ -205,18 +237,33 @@ export default function CategoriesPage() {
                   {new Date(category.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => setEditingCategory(category)}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="group relative p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                      title="Edit category"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                      <div className="absolute inset-0 bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                     </button>
                     <button
                       onClick={() => handleDeleteCategory(category.id)}
-                      className="text-red-600 hover:text-red-900"
+                      disabled={deletingCategoryId === category.id}
+                      className={`group relative p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+                        deletingCategoryId === category.id
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                      }`}
+                      title="Delete category"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletingCategoryId === category.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                          <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
+                        </>
+                      )}
                     </button>
                   </div>
                 </td>
@@ -224,6 +271,7 @@ export default function CategoriesPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {categories.length === 0 && (
@@ -242,6 +290,33 @@ export default function CategoriesPage() {
         }}
         onSuccess={handleFormSuccess}
       />
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
+          <div className={`group relative px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 backdrop-blur-sm border ${
+            toast.type === 'success' 
+              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400' 
+              : 'bg-gradient-to-r from-red-500 to-red-600 text-white border-red-400'
+          }`}>
+            <div className="flex-shrink-0">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                toast.type === 'success' ? 'bg-white bg-opacity-20' : 'bg-white bg-opacity-20'
+              }`}>
+                <span className="text-sm">{toast.type === 'success' ? '✓' : '✕'}</span>
+              </div>
+            </div>
+            <span className="font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-2 p-1 rounded-full hover:bg-black hover:bg-opacity-20 transition-colors duration-200 group-hover:scale-110"
+            >
+              <span className="text-lg leading-none">×</span>
+            </button>
+            <div className="absolute bottom-0 left-0 h-1 bg-white bg-opacity-30 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

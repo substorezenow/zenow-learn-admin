@@ -1,4 +1,4 @@
-// Force Node.js runtime for proper cookie handling
+// Secure login with browser fingerprint encryption
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -6,6 +6,7 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const username = formData.get("username");
   const password = formData.get("password");
+  const fingerprint = formData.get("fingerprint");
 
   // Use env var for backend URL, fallback to localhost
   const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
@@ -15,6 +16,9 @@ export async function POST(req: NextRequest) {
       const fd = new FormData();
       fd.append("username", username as string);
       fd.append("password", password as string);
+      if (fingerprint) {
+        fd.append("fingerprint", fingerprint as string);
+      }
       return fd;
     })(),
   });
@@ -26,29 +30,23 @@ export async function POST(req: NextRequest) {
   const data = await res.json();
   const token = data.token;
 
-  // Clear any existing insecure cookies first
-  const response = NextResponse.json({ success: true });
-  
-  // Clear old insecure cookies
-  const oldCookieNames = ['admin_access_token', 'auth_token', 'jwt', 'access_token'];
-  oldCookieNames.forEach(name => {
-    response.cookies.set(name, '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0, // Expire immediately
-    });
+  // Store token in httpOnly cookie (secure) + browser fingerprint validation
+  const response = NextResponse.json({ 
+    success: true,
+    message: "Login successful. Token secured with browser fingerprint validation."
   });
   
-  // Set secure httpOnly cookie with shorter expiration
+  // Set httpOnly cookie (secure)
   response.cookies.set("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 4, // 4 hours (matches JWT expiration)
+    maxAge: 60 * 60 * 4, // 4 hours
   });
+
+  // Store fingerprint hash in JWT payload (not in separate cookie)
+  // The fingerprint will be validated dynamically on each request
   
   return response;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Play, FileText, Video } from 'lucide-react';
+import { Plus, Edit, Trash2, Play, FileText, Video, Loader2 } from 'lucide-react';
 import adminApiService from '../../../src/services/adminApi';
 import { CourseModule, Course } from '../../../src/types';
 
@@ -11,10 +11,19 @@ export default function ModulesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingModule, setEditingModule] = useState<CourseModule | null>(null);
+  const [deletingModuleId, setDeletingModuleId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     fetchModules();
   }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const fetchModules = async () => {
     try {
@@ -51,15 +60,19 @@ export default function ModulesPage() {
     if (!confirm('Are you sure you want to delete this module?')) return;
 
     try {
+      setDeletingModuleId(id);
       const response = await adminApiService.deleteCourseModule(id);
       if (response.success) {
         setModules(modules.filter(module => module.id !== id));
+        setToast({ type: 'success', message: 'Module deleted successfully' });
       } else {
-        alert('Failed to delete module');
+        setToast({ type: 'error', message: 'Failed to delete module' });
       }
     } catch (err) {
       console.error('Error deleting module:', err);
-      alert('Error deleting module');
+      setToast({ type: 'error', message: 'Error deleting module' });
+    } finally {
+      setDeletingModuleId(null);
     }
   };
 
@@ -101,20 +114,22 @@ export default function ModulesPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-gray-900">Course Modules Management</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
         >
-          <Plus className="w-4 h-4" />
-          Add Module
+          <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
+          <span className="font-semibold">Add Module</span>
+          <div className="absolute inset-0 bg-white rounded-lg opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
         </button>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Module
@@ -179,9 +194,22 @@ export default function ModulesPage() {
                     </button>
                     <button
                       onClick={() => handleDeleteModule(module.id)}
-                      className="text-red-600 hover:text-red-900"
+                      disabled={deletingModuleId === module.id}
+                      className={`group relative p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+                        deletingModuleId === module.id
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                      }`}
+                      title="Delete module"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletingModuleId === module.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                          <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
+                        </>
+                      )}
                     </button>
                   </div>
                 </td>
@@ -189,6 +217,7 @@ export default function ModulesPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {modules.length === 0 && (
@@ -215,6 +244,33 @@ export default function ModulesPage() {
                 Create
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
+          <div className={`group relative px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 backdrop-blur-sm border ${
+            toast.type === 'success' 
+              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400' 
+              : 'bg-gradient-to-r from-red-500 to-red-600 text-white border-red-400'
+          }`}>
+            <div className="flex-shrink-0">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                toast.type === 'success' ? 'bg-white bg-opacity-20' : 'bg-white bg-opacity-20'
+              }`}>
+                <span className="text-sm">{toast.type === 'success' ? '✓' : '✕'}</span>
+              </div>
+            </div>
+            <span className="font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-2 p-1 rounded-full hover:bg-black hover:bg-opacity-20 transition-colors duration-200 group-hover:scale-110"
+            >
+              <span className="text-lg leading-none">×</span>
+            </button>
+            <div className="absolute bottom-0 left-0 h-1 bg-white bg-opacity-30 rounded-full animate-pulse"></div>
           </div>
         </div>
       )}

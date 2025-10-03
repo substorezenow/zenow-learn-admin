@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff, Layers } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Layers, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import adminApiService from '../../../src/services/adminApi';
 import FieldForm from '../components/FieldForm';
@@ -13,10 +13,20 @@ export default function FieldsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
+  const [togglingFieldId, setTogglingFieldId] = useState<number | null>(null);
+  const [deletingFieldId, setDeletingFieldId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     fetchFields();
   }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const fetchFields = async () => {
     try {
@@ -39,20 +49,25 @@ export default function FieldsPage() {
     if (!confirm('Are you sure you want to delete this field?')) return;
 
     try {
+      setDeletingFieldId(id);
       const response = await adminApiService.deleteField(id);
       if (response.success) {
         setFields(fields.filter(field => field.id !== id));
+        setToast({ type: 'success', message: 'Field deleted successfully' });
       } else {
-        alert('Failed to delete field');
+        setToast({ type: 'error', message: 'Failed to delete field' });
       }
     } catch (err) {
       console.error('Error deleting field:', err);
-      alert('Error deleting field');
+      setToast({ type: 'error', message: 'Error deleting field' });
+    } finally {
+      setDeletingFieldId(null);
     }
   };
 
   const handleToggleActive = async (field: Field) => {
     try {
+      setTogglingFieldId(field.id);
       const response = await adminApiService.updateField(field.id, {
         ...field,
         is_active: !field.is_active
@@ -62,12 +77,15 @@ export default function FieldsPage() {
         setFields(fields.map(f => 
           f.id === field.id ? { ...f, is_active: !f.is_active } : f
         ));
+        setToast({ type: 'success', message: `Field ${!field.is_active ? 'activated' : 'deactivated'} successfully` });
       } else {
-        alert('Failed to update field');
+        setToast({ type: 'error', message: 'Failed to update field' });
       }
     } catch (err) {
       console.error('Error updating field:', err);
-      alert('Error updating field');
+      setToast({ type: 'error', message: 'Error updating field' });
+    } finally {
+      setTogglingFieldId(null);
     }
   };
 
@@ -108,20 +126,22 @@ export default function FieldsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-gray-900">Fields Management</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
         >
-          <Plus className="w-4 h-4" />
-          Add Field
+          <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
+          <span className="font-semibold">Add Field</span>
+          <div className="absolute inset-0 bg-white rounded-lg opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
         </button>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Field
@@ -147,22 +167,26 @@ export default function FieldsPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {fields.map((field) => (
-              <tr key={field.id} className="hover:bg-gray-50">
+            {fields.map((field, index) => (
+              <tr 
+                key={field.id} 
+                className="group hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 hover:shadow-sm border-b border-gray-100 hover:border-gray-200"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
+                    <div className="flex-shrink-0 h-10 w-10 group-hover:scale-105 transition-transform duration-200">
                       {field.icon_url ? (
                         <Image 
-                          className="h-10 w-10 rounded-full" 
+                          className="h-10 w-10 rounded-full shadow-sm group-hover:shadow-md transition-shadow duration-200" 
                           src={field.icon_url} 
                           alt={field.name}
                           width={40}
                           height={40}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <Layers className="w-5 h-5 text-gray-600" />
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                          <Layers className="w-5 h-5 text-gray-600 group-hover:text-gray-700 transition-colors duration-200" />
                         </div>
                       )}
                     </div>
@@ -187,21 +211,29 @@ export default function FieldsPage() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => handleToggleActive(field)}
-                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      field.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                    disabled={togglingFieldId === field.id}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
+                      togglingFieldId === field.id
+                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        : field.is_active
+                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                        : 'bg-red-100 text-red-800 hover:bg-red-200'
                     }`}
                   >
-                    {field.is_active ? (
+                    {togglingFieldId === field.id ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Updating...</span>
+                      </>
+                    ) : field.is_active ? (
                       <>
                         <Eye className="w-3 h-3" />
-                        Active
+                        <span>Active</span>
                       </>
                     ) : (
                       <>
                         <EyeOff className="w-3 h-3" />
-                        Inactive
+                        <span>Inactive</span>
                       </>
                     )}
                   </button>
@@ -210,18 +242,33 @@ export default function FieldsPage() {
                   {field.sort_order}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => setEditingField(field)}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="group relative p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                      title="Edit field"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                      <div className="absolute inset-0 bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                     </button>
                     <button
                       onClick={() => handleDeleteField(field.id)}
-                      className="text-red-600 hover:text-red-900"
+                      disabled={deletingFieldId === field.id}
+                      className={`group relative p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+                        deletingFieldId === field.id
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                      }`}
+                      title="Delete field"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletingFieldId === field.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                          <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
+                        </>
+                      )}
                     </button>
                   </div>
                 </td>
@@ -229,6 +276,7 @@ export default function FieldsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {fields.length === 0 && (
@@ -248,6 +296,33 @@ export default function FieldsPage() {
         }}
         onSuccess={handleFormSuccess}
       />
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
+          <div className={`group relative px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 backdrop-blur-sm border ${
+            toast.type === 'success' 
+              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400' 
+              : 'bg-gradient-to-r from-red-500 to-red-600 text-white border-red-400'
+          }`}>
+            <div className="flex-shrink-0">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                toast.type === 'success' ? 'bg-white bg-opacity-20' : 'bg-white bg-opacity-20'
+              }`}>
+                <span className="text-sm">{toast.type === 'success' ? '✓' : '✕'}</span>
+              </div>
+            </div>
+            <span className="font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-2 p-1 rounded-full hover:bg-black hover:bg-opacity-20 transition-colors duration-200 group-hover:scale-110"
+            >
+              <span className="text-lg leading-none">×</span>
+            </button>
+            <div className="absolute bottom-0 left-0 h-1 bg-white bg-opacity-30 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

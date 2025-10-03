@@ -78,16 +78,17 @@ export default function StudentsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-gray-900">Students Management</h1>
         <div className="text-sm text-gray-500">
           Total Students: {students.length}
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Student
@@ -168,6 +169,7 @@ export default function StudentsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {students.length === 0 && (

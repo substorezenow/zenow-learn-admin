@@ -8,7 +8,8 @@ import {
   Layers,
   BarChart3,
   Users,
-  FileText
+  FileText,
+  Shield
 } from "lucide-react";
 
 export const sidebarRoutes = [
@@ -62,6 +63,12 @@ export const adminSidebarRoutes = [
     name: "Blogs",
     icon: <FileText className="w-5 h-5" />,
     description: "Manage blog content"
+  },
+  {
+    route: "/dashboard/security",
+    name: "Security Dashboard",
+    icon: <Shield className="w-5 h-5" />,
+    description: "Monitor security events and threats"
   },
   {
     route: "/dashboard/settings",

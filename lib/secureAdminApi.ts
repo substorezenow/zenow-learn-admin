@@ -1,5 +1,5 @@
-// Secure Admin API Service with Browser Fingerprint Validation
-import { secureApiWrapper } from "../../lib/secureApiWrapper";
+// Secure Admin API Service with Browser Fingerprint Encryption
+import { SecureTokenStorage } from './secureTokenStorage';
 import {
   ApiResponse,
   AdminStats,
@@ -25,11 +25,13 @@ interface RequestOptions {
   body?: string | FormData;
 }
 
-class AdminApiService {
+class SecureAdminApiService {
   private baseURL: string;
+  private tokenStorage: SecureTokenStorage;
 
   constructor() {
     this.baseURL = API_BASE_URL;
+    this.tokenStorage = new SecureTokenStorage();
   }
 
   async request<T = unknown>(
@@ -38,24 +40,64 @@ class AdminApiService {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
 
+    // Get encrypted token
+    const token = this.tokenStorage.getToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please login again.');
+    }
+
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
         ...options.headers,
       },
       ...options,
     };
 
-    // Use secure API wrapper that validates browser fingerprint
-    return secureApiWrapper.secureRequest<ApiResponse<T>>(url, config);
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        
+        // If unauthorized, clear token and redirect to login
+        if (response.status === 401) {
+          this.tokenStorage.clearToken();
+          window.location.href = '/login';
+        }
+        
+        throw new Error(
+          errorData.error || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Secure Admin API request failed:", error);
+      throw error;
+    }
   }
 
-  // Clear session on logout
-  public clearSession(): void {
-    // Clear session cookie by calling logout API
-    fetch('/api/auth/logout', { method: 'POST' });
+  // Store encrypted token after login
+  public storeEncryptedToken(token: string): boolean {
+    return this.tokenStorage.storeToken(token);
   }
 
+  // Clear encrypted token on logout
+  public clearEncryptedToken(): void {
+    this.tokenStorage.clearToken();
+  }
+
+  // Check if token exists
+  public hasToken(): boolean {
+    return this.tokenStorage.hasToken();
+  }
+
+  // Get token info
+  public getTokenInfo() {
+    return this.tokenStorage.getTokenInfo();
+  }
 
   // ==================== ADMIN STATISTICS ====================
   async getAdminStats(): Promise<ApiResponse<AdminStats>> {
@@ -228,26 +270,8 @@ class AdminApiService {
     }
     return [];
   }
-
-  // Upload file (placeholder for future implementation)
-  async uploadFile(
-    file: File,
-    type: string = "image"
-  ): Promise<ApiResponse<unknown>> {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", type);
-
-    return this.request("/admin/upload", {
-      method: "POST",
-      headers: {
-        // Don't set Content-Type, let browser set it with boundary
-      },
-      body: formData,
-    });
-  }
 }
 
 // Create and export a singleton instance
-const adminApiService = new AdminApiService();
-export default adminApiService;
+const secureAdminApiService = new SecureAdminApiService();
+export default secureAdminApiService;

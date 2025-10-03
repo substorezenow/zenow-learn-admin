@@ -5,6 +5,7 @@ import { Menu, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { adminSidebarRoutes } from "./sidebarRoutes";
+import adminApiService from "../../src/services/adminApi";
 
 export default function DashboardLayout({
   children,
@@ -26,7 +27,7 @@ export default function DashboardLayout({
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-white via-blue-50 to-indigo-100 overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white via-blue-50 to-indigo-100">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-2 bg-white shadow border-b border-blue-100">
         <div className="flex items-center gap-3">
@@ -37,14 +38,15 @@ export default function DashboardLayout({
           >
             <Menu className="w-5 h-5 text-blue-700" />
           </button>
-          <span className="text-lg font-bold text-blue-700 tracking-tight">
+          <span className="text-lg font-bold text-blue-700 tracking-tight truncate">
             Zenow Dashboard
           </span>
         </div>
         <button
           onClick={async () => {
             if (window.confirm("Are you sure you want to log out?")) {
-              await fetch("/api/auth/logout", { method: "POST" });
+              // Clear session and cookies
+              adminApiService.clearSession();
               router.replace("/login");
             }
           }}
@@ -55,7 +57,7 @@ export default function DashboardLayout({
         </button>
       </header>
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-x-auto">
         {/* Sidebar */}
         <AnimatePresence>
           {(sidebarOpen || isDesktop) && (
@@ -64,7 +66,7 @@ export default function DashboardLayout({
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -250, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed md:static z-30 top-0 left-0 h-full w-64 bg-white shadow-xl flex flex-col border-r border-blue-100 md:h-auto md:w-60"
+              className="fixed md:static z-30 top-0 left-0 h-full w-64 bg-white shadow-xl flex flex-col border-r border-blue-100 md:h-auto md:w-60 flex-shrink-0"
             >
               <div className="flex items-center justify-between px-3 py-2 border-b border-blue-100">
                 <span className="text-lg font-bold text-blue-700">Menu</span>
@@ -98,14 +100,14 @@ export default function DashboardLayout({
         </AnimatePresence>
 
         {/* Main content */}
-        <main className="flex-1 flex flex-col bg-white shadow-lg border border-blue-100 min-h-0">
-          <div className="px-4 py-2 border-b border-blue-100 bg-white">
+        <main className="flex-1 flex flex-col bg-white shadow-lg border border-blue-100 min-h-0 min-w-0">
+          <div className="px-4 py-2 border-b border-blue-100 bg-white flex-shrink-0">
             <h1 className="text-xl font-bold text-blue-700">
               {adminSidebarRoutes.find((r) => r.route === pathname)?.name ||
                 "Dashboard"}
             </h1>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">{children}</div>
+          <div className="flex-1 overflow-x-auto overflow-y-auto p-6 min-w-0">{children}</div>
         </main>
       </div>
     </div>
