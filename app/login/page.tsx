@@ -4,7 +4,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import Link from "next/link";
-import { SecureTokenStorage } from "../../lib/secureTokenStorage";
+// Dynamic import to prevent SSR issues
+let SecureTokenStorage: typeof import("../../lib/secureTokenStorage").SecureTokenStorage | null = null;
+if (typeof window !== 'undefined') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    SecureTokenStorage = require("../../lib/secureTokenStorage").SecureTokenStorage;
+  } catch (error) {
+    console.error('Failed to load SecureTokenStorage:', error);
+  }
+}
 
 
 export default function Login() {
@@ -14,9 +23,13 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fingerprint, setFingerprint] = useState("");
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    // Mark as client-side rendered
+    setIsClient(true);
+    
     // Generate session ID silently - only in browser
     if (typeof window !== 'undefined' && SecureTokenStorage) {
       try {
@@ -69,6 +82,20 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  // Show loading state during SSR
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 px-2">
+        <div className="bg-white/90 rounded-xl shadow-xl p-8 w-full max-w-sm flex flex-col gap-6">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          </div>
+          <p className="text-center text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 px-2">
