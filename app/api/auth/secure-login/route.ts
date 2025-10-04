@@ -5,32 +5,40 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
-  const formData = await req.formData();
-  const username = formData.get("username");
-  const password = formData.get("password");
-  const fingerprint = formData.get("fingerprint");
+  try {
+    const formData = await req.formData();
+    const username = formData.get("username");
+    const password = formData.get("password");
+    const fingerprint = formData.get("fingerprint");
 
-  // Use env var for backend URL, fallback to localhost
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
-  const res = await fetch(`${backendUrl}/api/auth/login`, {
-    method: "POST",
-    body: (() => {
-      const fd = new FormData();
-      fd.append("username", username as string);
-      fd.append("password", password as string);
-      if (fingerprint) {
-        fd.append("fingerprint", fingerprint as string);
-      }
-      return fd;
-    })(),
-  });
+    if (!username || !password) {
+      return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
+    }
 
-  if (!res.ok) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-  }
+    // Use env var for backend URL, fallback to localhost
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    
+    const res = await fetch(`${backendUrl}/api/auth/login`, {
+      method: "POST",
+      body: (() => {
+        const fd = new FormData();
+        fd.append("username", username as string);
+        fd.append("password", password as string);
+        if (fingerprint) {
+          fd.append("fingerprint", fingerprint as string);
+        }
+        return fd;
+      })(),
+    });
 
-  const data = await res.json();
-  const token = data.token;
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Backend login error:', res.status, errorText);
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
+
+    const data = await res.json();
+    const token = data.token;
 
   // Store token in httpOnly cookie (secure) + browser fingerprint validation
   const response = NextResponse.json({ 
@@ -47,8 +55,12 @@ export async function POST(req: NextRequest) {
     maxAge: 60 * 60 * 4, // 4 hours
   });
 
-  // Store fingerprint hash in JWT payload (not in separate cookie)
-  // The fingerprint will be validated dynamically on each request
-  
-  return response;
+    // Store fingerprint hash in JWT payload (not in separate cookie)
+    // The fingerprint will be validated dynamically on each request
+    
+    return response;
+  } catch (error) {
+    console.error('Secure login error:', error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

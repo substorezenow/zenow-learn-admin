@@ -17,9 +17,16 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
-    // Generate session ID silently
-    const tokenStorage = new SecureTokenStorage();
-    setFingerprint(tokenStorage['encryption'].getCurrentSessionId());
+    // Generate session ID silently - only in browser
+    if (typeof window !== 'undefined') {
+      try {
+        const tokenStorage = new SecureTokenStorage();
+        setFingerprint(tokenStorage['encryption'].getCurrentSessionId());
+      } catch (error) {
+        console.error('Error generating fingerprint:', error);
+        setFingerprint('fallback');
+      }
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +41,7 @@ export default function Login() {
       const formData = new FormData();
       formData.append("username", username);
       formData.append("password", password);
-      formData.append("fingerprint", fingerprint);
+      formData.append("fingerprint", fingerprint || "fallback");
       
       // Use secure login endpoint
       const res = await fetch("/api/auth/secure-login", {
