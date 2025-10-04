@@ -4,7 +4,7 @@ export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     
     const response = await fetch(`${backendUrl}/api/admin/security-dashboard`, {
       method: "GET",

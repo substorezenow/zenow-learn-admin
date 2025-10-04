@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   const password = formData.get("password");
 
   // Use env var for backend URL, fallback to localhost
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const res = await fetch(`${backendUrl}/api/auth/login`, {
     method: "POST",
     body: (() => {

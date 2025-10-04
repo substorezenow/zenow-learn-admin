@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const res = await fetch(`${backendUrl}/api/user/profile`, {
     headers: { Authorization: `Bearer ${token}` },
   });

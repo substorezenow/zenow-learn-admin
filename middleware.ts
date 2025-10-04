@@ -21,7 +21,7 @@ const middleware = async (req: NextRequest) => {
   // If token exists, validate it
   if (token) {
     // Use env var for backend URL, fallback to localhost
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     let valid = false;
     try {
       const res = await fetch(`${backendUrl}/api/auth/validate-token`, {

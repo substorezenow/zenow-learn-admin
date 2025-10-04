@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Use env var for backend URL, fallback to localhost
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+    
+    console.log('Backend URL:', backendUrl);
+    console.log('Environment:', process.env.NODE_ENV);
     
     const res = await fetch(`${backendUrl}/api/auth/login`, {
       method: "POST",
@@ -40,20 +43,25 @@ export async function POST(req: NextRequest) {
     const data = await res.json();
     const token = data.token;
 
-  // Store token in httpOnly cookie (secure) + browser fingerprint validation
-  const response = NextResponse.json({ 
-    success: true,
-    message: "Login successful. Token secured with browser fingerprint validation."
-  });
-  
-  // Set httpOnly cookie (secure)
-  response.cookies.set("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 4, // 4 hours
-  });
+    if (!token) {
+      console.error('No token received from backend');
+      return NextResponse.json({ error: "No token received from backend" }, { status: 500 });
+    }
+
+    // Store token in httpOnly cookie (secure) + browser fingerprint validation
+    const response = NextResponse.json({ 
+      success: true,
+      message: "Login successful. Token secured with browser fingerprint validation."
+    });
+    
+    // Set httpOnly cookie (secure)
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 4, // 4 hours
+    });
 
     // Store fingerprint hash in JWT payload (not in separate cookie)
     // The fingerprint will be validated dynamically on each request
