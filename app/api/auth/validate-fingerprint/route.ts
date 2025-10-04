@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       message: 'Fingerprint validated' 
     });
     
-  } catch (error) {
+  } catch {
     return NextResponse.json({ 
       valid: false, 
       error: 'Fingerprint validation failed' 

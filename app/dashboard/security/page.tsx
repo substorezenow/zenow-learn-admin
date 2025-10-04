@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, AlertTriangle, Users, Eye, Lock, Activity } from "lucide-react";
+import { Shield, AlertTriangle, Eye, Lock, Activity } from "lucide-react";
 
 interface SecurityEvent {
   event_type: string;

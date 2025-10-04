@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch fields" }, 
       { status: 500 }
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to create field" }, 
       { status: 500 }

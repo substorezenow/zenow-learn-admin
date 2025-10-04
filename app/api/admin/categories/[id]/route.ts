@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const token = req.cookies.get("token")?.value;
   
   if (!token) {
@@ -14,7 +15,7 @@ export async function PUT(
   const body = await req.json();
   
   try {
-    const res = await fetch(`${backendUrl}/api/admin/categories/${params.id}`, {
+    const res = await fetch(`${backendUrl}/api/admin/categories/${id}`, {
       method: "PUT",
       headers: { 
         Authorization: `Bearer ${token}`,
@@ -30,7 +31,7 @@ export async function PUT(
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to update category" }, 
       { status: 500 }
@@ -40,8 +41,9 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const token = req.cookies.get("token")?.value;
   
   if (!token) {
@@ -51,7 +53,7 @@ export async function DELETE(
   const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
   
   try {
-    const res = await fetch(`${backendUrl}/api/admin/categories/${params.id}`, {
+    const res = await fetch(`${backendUrl}/api/admin/categories/${id}`, {
       method: "DELETE",
       headers: { 
         Authorization: `Bearer ${token}`,
@@ -66,7 +68,7 @@ export async function DELETE(
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to delete category" }, 
       { status: 500 }

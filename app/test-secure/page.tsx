@@ -1,19 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { SecureTokenStorage } from "../../lib/secureTokenStorage";
 import adminApiService from "../../src/services/adminApi";
 
 export default function TestSecurePage() {
-  const [tokenInfo, setTokenInfo] = useState<any>(null);
-  const [apiTest, setApiTest] = useState<any>(null);
+  const [tokenInfo, setTokenInfo] = useState<{ exists: boolean; fingerprint?: string } | null>(null);
+  const [apiTest, setApiTest] = useState<{ success: boolean; data?: unknown; error?: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const tokenStorage = new SecureTokenStorage();
+  const tokenStorage = useMemo(() => new SecureTokenStorage(), []);
 
   useEffect(() => {
     // Get token info
     const info = tokenStorage.getTokenInfo();
     setTokenInfo(info);
-  }, []);
+  }, [tokenStorage]);
 
   const testApiCall = async () => {
     setLoading(true);
@@ -21,7 +21,7 @@ export default function TestSecurePage() {
       const response = await adminApiService.getAdminStats();
       setApiTest({ success: true, data: response });
     } catch (error) {
-      setApiTest({ success: false, error: error.message });
+      setApiTest({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
@@ -82,15 +82,15 @@ export default function TestSecurePage() {
         <div className="mt-8 bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">LocalStorage Debug</h2>
           <div className="space-y-2">
-            <p><strong>zenow_secure_auth:</strong> {localStorage.getItem('zenow_secure_auth') || 'None'}</p>
-            <p><strong>zenow_fingerprint:</strong> {localStorage.getItem('zenow_fingerprint') || 'None'}</p>
+            <p><strong>zenow_secure_auth:</strong> {typeof window !== 'undefined' ? (localStorage.getItem('zenow_secure_auth') || 'None') : 'Server-side'}</p>
+            <p><strong>zenow_fingerprint:</strong> {typeof window !== 'undefined' ? (localStorage.getItem('zenow_fingerprint') || 'None') : 'Server-side'}</p>
           </div>
         </div>
 
         {/* Cookies Debug */}
         <div className="mt-8 bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Cookies Debug</h2>
-          <p><strong>document.cookie:</strong> {document.cookie || 'None'}</p>
+          <p><strong>document.cookie:</strong> {typeof window !== 'undefined' ? (document.cookie || 'None') : 'Server-side'}</p>
         </div>
       </div>
     </div>

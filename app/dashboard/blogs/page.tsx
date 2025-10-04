@@ -10,7 +10,7 @@ export default function BlogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
+  const [, setEditingBlog] = useState<Blog | null>(null);
 
   useEffect(() => {
     fetchBlogs();

@@ -14,7 +14,7 @@ import {
   UpdateCourseRequest,
   CreateModuleRequest,
   UpdateModuleRequest,
-} from "../types";
+} from "../src/types";
 
 // Use Next.js API routes for security
 const API_BASE_URL = "/api";
@@ -41,7 +41,7 @@ class SecureAdminApiService {
     const url = `${this.baseURL}${endpoint}`;
 
     // Get encrypted token
-    const token = this.tokenStorage.getToken();
+    const token = await this.tokenStorage.getToken();
     if (!token) {
       throw new Error('No authentication token found. Please login again.');
     }
@@ -80,8 +80,8 @@ class SecureAdminApiService {
   }
 
   // Store encrypted token after login
-  public storeEncryptedToken(token: string): boolean {
-    return this.tokenStorage.storeToken(token);
+  public async storeEncryptedToken(token: string): Promise<boolean> {
+    return await this.tokenStorage.storeToken(token);
   }
 
   // Clear encrypted token on logout

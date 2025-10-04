@@ -10,10 +10,15 @@ export class SecureTokenStorage {
   }
 
   // Store encrypted token (DEPRECATED - use httpOnly cookies instead)
-  public storeToken(token: string): boolean {
+  public async storeToken(token: string): Promise<boolean> {
     try {
+      // Check if we're in browser environment
+      if (typeof window === 'undefined') {
+        return false;
+      }
+      
       // Encrypt the token using browser fingerprint
-      const encryptedToken = this.encryption.encryptToken(token);
+      const encryptedToken = await this.encryption.encryptToken(token);
       
       // Store in localStorage (encrypted)
       localStorage.setItem(this.STORAGE_KEY, encryptedToken);
@@ -32,6 +37,11 @@ export class SecureTokenStorage {
   // Store only session ID for validation (SECURE APPROACH)
   public storeSession(): boolean {
     try {
+      // Check if we're in browser environment
+      if (typeof window === 'undefined') {
+        return false;
+      }
+      
       // Store session ID for validation
       const sessionId = this.encryption.getCurrentSessionId();
       localStorage.setItem('zenow_session', sessionId);
@@ -44,8 +54,13 @@ export class SecureTokenStorage {
   }
 
   // Retrieve and decrypt token
-  public getToken(): string | null {
+  public async getToken(): Promise<string | null> {
     try {
+      // Check if we're in browser environment
+      if (typeof window === 'undefined') {
+        return null;
+      }
+      
       const encryptedToken = localStorage.getItem(this.STORAGE_KEY);
       if (!encryptedToken) {
         return null;
@@ -58,7 +73,7 @@ export class SecureTokenStorage {
       }
 
       // Decrypt the token
-      const decryptedToken = this.encryption.decryptToken(encryptedToken);
+      const decryptedToken = await this.encryption.decryptToken(encryptedToken);
       return decryptedToken;
     } catch (error) {
       console.error('Failed to retrieve token:', error);
@@ -69,18 +84,27 @@ export class SecureTokenStorage {
 
   // Clear stored token
   public clearToken(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
-    localStorage.removeItem('zenow_session');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(this.STORAGE_KEY);
+      localStorage.removeItem('zenow_session');
+    }
   }
 
   // Clear only session
   public clearSession(): void {
-    localStorage.removeItem('zenow_session');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('zenow_session');
+    }
   }
 
   // Validate session
   public validateSession(): boolean {
     try {
+      // Check if we're in browser environment
+      if (typeof window === 'undefined') {
+        return false;
+      }
+      
       const storedSession = localStorage.getItem('zenow_session');
       if (!storedSession) {
         return false;
@@ -106,14 +130,24 @@ export class SecureTokenStorage {
 
   // Check if token exists
   public hasToken(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
     return localStorage.getItem(this.STORAGE_KEY) !== null;
   }
 
   // Get token info (without decrypting)
-  public getTokenInfo(): { exists: boolean; session: string | null } {
+  public getTokenInfo(): { exists: boolean; session: string | null; fingerprint?: string } {
+    if (typeof window === 'undefined') {
+      return {
+        exists: false,
+        session: null
+      };
+    }
     return {
       exists: this.hasToken(),
-      session: localStorage.getItem('zenow_session')
+      session: localStorage.getItem('zenow_session'),
+      fingerprint: this.encryption.getCurrentSessionId()
     };
   }
 }

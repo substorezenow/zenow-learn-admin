@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from 'jsonwebtoken';
+import { createHash } from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Decode JWT to get stored session hash
-    const decoded = jwt.decode(token) as any;
+    const decoded = jwt.decode(token) as { fingerprintHash?: string } | null;
     
     if (!decoded || !decoded.fingerprintHash) {
       return NextResponse.json({ 
@@ -28,8 +29,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Generate current session hash
-    const crypto = require('crypto');
-    const currentSessionHash = crypto.createHash('sha256').update(sessionData).digest('hex');
+    const currentSessionHash = createHash('sha256').update(sessionData).digest('hex');
     
     // Compare with stored hash
     if (currentSessionHash !== decoded.fingerprintHash) {
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       message: 'Session verified' 
     });
     
-  } catch (error) {
+  } catch {
     return NextResponse.json({ 
       valid: false, 
       error: 'Session verification failed' 

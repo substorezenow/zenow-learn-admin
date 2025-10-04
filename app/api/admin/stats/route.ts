@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch admin stats" }, 
       { status: 500 }

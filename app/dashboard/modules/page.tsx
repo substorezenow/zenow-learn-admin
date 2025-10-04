@@ -10,7 +10,7 @@ export default function ModulesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingModule, setEditingModule] = useState<CourseModule | null>(null);
+  const [, setEditingModule] = useState<CourseModule | null>(null);
   const [deletingModuleId, setDeletingModuleId] = useState<number | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 

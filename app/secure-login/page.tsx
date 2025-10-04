@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, User, Lock, Shield } from "lucide-react";
 import Link from "next/link";
@@ -13,13 +13,13 @@ export default function SecureLogin() {
   const [error, setError] = useState("");
   const [fingerprint, setFingerprint] = useState("");
   const router = useRouter();
-  const tokenStorage = new SecureTokenStorage();
+  const tokenStorage = useMemo(() => new SecureTokenStorage(), []);
 
   useEffect(() => {
     // Generate and display browser fingerprint
-    const fp = tokenStorage['encryption']['fingerprint'].generateFingerprint();
+    const fp = tokenStorage['encryption'].getCurrentSessionId();
     setFingerprint(fp);
-  }, []);
+  }, [tokenStorage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ export default function SecureLogin() {
       const data = await response.json();
       
       // Store token with browser fingerprint encryption
-      const success = tokenStorage.storeToken(data.token);
+      const success = await tokenStorage.storeToken(data.token);
       
       if (success) {
         console.log("🔐 Token encrypted and stored with browser fingerprint");
