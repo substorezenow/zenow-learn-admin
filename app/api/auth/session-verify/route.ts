@@ -1,8 +1,8 @@
 // Session verification endpoint (stealth security)
 export const dynamic = "force-dynamic";
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 import jwt from 'jsonwebtoken';
-import { createHash } from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,8 +28,12 @@ export async function POST(req: NextRequest) {
       }, { status: 401 });
     }
     
-    // Generate current session hash
-    const currentSessionHash = createHash('sha256').update(sessionData).digest('hex');
+    // Generate current session hash using Web Crypto API
+    const encoder = new TextEncoder();
+    const data = encoder.encode(sessionData);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const currentSessionHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     
     // Compare with stored hash
     if (currentSessionHash !== decoded.fingerprintHash) {

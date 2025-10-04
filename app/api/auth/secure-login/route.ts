@@ -2,6 +2,8 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = 'edge';
+
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const username = formData.get("username");

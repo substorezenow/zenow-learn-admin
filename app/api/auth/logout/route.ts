@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = 'edge';
+
 export async function POST() {
   // Clear ALL authentication cookies
   const response = NextResponse.json({ success: true });

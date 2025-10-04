@@ -1,5 +1,6 @@
 // Validate browser fingerprint for secure requests
 export const dynamic = "force-dynamic";
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
