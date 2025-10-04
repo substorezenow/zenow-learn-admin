@@ -18,6 +18,12 @@ export class SessionValidator {
       return this.sessionId;
     }
 
+    // Check if we're in browser environment
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      this.sessionId = 'server-side-fallback';
+      return this.sessionId;
+    }
+
     const components = [
       navigator.userAgent,
       navigator.language,
@@ -38,6 +44,8 @@ export class SessionValidator {
   // Canvas signature
   private getCanvasSignature(): string {
     try {
+      if (typeof document === 'undefined') return 'no-document';
+      
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) return 'no-canvas';
@@ -55,6 +63,8 @@ export class SessionValidator {
   // WebGL signature
   private getWebGLSignature(): string {
     try {
+      if (typeof document === 'undefined') return 'no-document';
+      
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
       if (!gl) return 'no-webgl';

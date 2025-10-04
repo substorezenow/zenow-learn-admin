@@ -18,7 +18,7 @@ export default function Login() {
 
   useEffect(() => {
     // Generate session ID silently - only in browser
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && SecureTokenStorage) {
       try {
         const tokenStorage = new SecureTokenStorage();
         setFingerprint(tokenStorage['encryption'].getCurrentSessionId());
@@ -26,6 +26,8 @@ export default function Login() {
         console.error('Error generating fingerprint:', error);
         setFingerprint('fallback');
       }
+    } else {
+      setFingerprint('fallback');
     }
   }, []);
 
