@@ -1,5 +1,4 @@
 // Secure login with browser fingerprint encryption
-export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 
 // Cloudflare Workers compatibility
@@ -30,17 +29,19 @@ export async function POST(req: NextRequest) {
     
     let res;
     try {
+      // Convert FormData to JSON for backend compatibility
+      const loginData = {
+        username: username as string,
+        password: password as string,
+        ...(fingerprint && { fingerprint: fingerprint as string })
+      };
+
       res = await fetch(`${backendUrl}/api/auth/login`, {
         method: "POST",
-        body: (() => {
-          const fd = new FormData();
-          fd.append("username", username as string);
-          fd.append("password", password as string);
-          if (fingerprint) {
-            fd.append("fingerprint", fingerprint as string);
-          }
-          return fd;
-        })(),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginData),
         // Add timeout for Cloudflare Pages
         signal: AbortSignal.timeout(10000), // 10 second timeout
       });
@@ -58,20 +59,25 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const token = data.token;
 
+    if (!res.ok) {
+      console.error('Backend login failed:', data.error);
+      return NextResponse.json({ error: data.error || "Login failed" }, { status: 401 });
+    }
+
+    // Extract token from backend response and set it as httpOnly cookie for frontend domain
+    const token = data.token;
     if (!token) {
       console.error('No token received from backend');
       return NextResponse.json({ error: "No token received from backend" }, { status: 500 });
     }
 
-    // Store token in httpOnly cookie (secure) + browser fingerprint validation
+    // Set httpOnly cookie for frontend domain
     const response = NextResponse.json({ 
       success: true,
       message: "Login successful. Token secured with browser fingerprint validation."
     });
     
-    // Set httpOnly cookie (secure)
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -79,9 +85,6 @@ export async function POST(req: NextRequest) {
       path: "/",
       maxAge: 60 * 60 * 4, // 4 hours
     });
-
-    // Store fingerprint hash in JWT payload (not in separate cookie)
-    // The fingerprint will be validated dynamically on each request
     
     return response;
   } catch (error) {

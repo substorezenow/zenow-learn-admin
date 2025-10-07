@@ -1,5 +1,4 @@
 // Force Node.js runtime for proper cookie handling
-export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -11,14 +10,18 @@ export async function POST(req: NextRequest) {
 
   // Use env var for backend URL, fallback to localhost
   const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  // Convert FormData to JSON for backend compatibility
+  const loginData = {
+    username: username as string,
+    password: password as string
+  };
+
   const res = await fetch(`${backendUrl}/api/auth/login`, {
     method: "POST",
-    body: (() => {
-      const fd = new FormData();
-      fd.append("username", username as string);
-      fd.append("password", password as string);
-      return fd;
-    })(),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(loginData),
   });
 
   if (!res.ok) {
