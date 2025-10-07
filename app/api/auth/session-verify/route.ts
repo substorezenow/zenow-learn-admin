@@ -2,7 +2,6 @@
 export const dynamic = "force-dynamic";
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
-import jwt from 'jsonwebtoken';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +17,7 @@ export async function POST(req: NextRequest) {
       }, { status: 401 });
     }
     
+<<<<<<< HEAD
     // Decode JWT to get stored session hash
     const decoded = jwt.decode(token) as { fingerprintHash?: string } | null;
     
@@ -49,6 +49,31 @@ export async function POST(req: NextRequest) {
     });
     
   } catch {
+=======
+    // Forward to backend for verification
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const res = await fetch(`${backendUrl}/api/auth/session-verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}`
+      },
+      body: JSON.stringify({ sessionData })
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      return NextResponse.json({ 
+        valid: false, 
+        error: data.error || 'Session verification failed' 
+      }, { status: res.status });
+    }
+    
+    return NextResponse.json(data);
+    
+  } catch (error) {
+>>>>>>> 3d4580f
     return NextResponse.json({ 
       valid: false, 
       error: 'Session verification failed' 

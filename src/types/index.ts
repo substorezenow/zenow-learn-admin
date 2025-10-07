@@ -64,8 +64,8 @@ export interface Course {
   price: number;
   is_free: boolean;
   is_published: boolean;
-  field_id: number;
-  instructor_id?: number;
+  field_id: number | string;
+  instructor_id?: string;
   prerequisites?: string;
   learning_outcomes?: string;
   course_modules?: CourseModule[];
@@ -133,9 +133,7 @@ export interface CreateCategoryRequest {
   is_active?: boolean;
 }
 
-export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
-  id: number;
-}
+export type UpdateCategoryRequest = Partial<CreateCategoryRequest>;
 
 export interface CreateFieldRequest {
   name: string;
@@ -148,33 +146,29 @@ export interface CreateFieldRequest {
   category_id: number;
 }
 
-export interface UpdateFieldRequest extends Partial<CreateFieldRequest> {
-  id: number;
-}
+export type UpdateFieldRequest = Partial<CreateFieldRequest>;
 
 export interface CreateCourseRequest {
   title: string;
   slug?: string;
   description: string;
-  short_description?: string;
-  banner_image?: string;
-  thumbnail_image?: string;
+  short_description?: string | null;
+  banner_image?: string | null;
+  thumbnail_image?: string | null;
   duration_hours: number;
-  difficulty_level: 'Beginner' | 'Intermediate' | 'Advanced';
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   price: number;
   is_free: boolean;
   is_published?: boolean;
-  field_id: number;
-  instructor_id: number;
-  prerequisites?: string;
-  learning_outcomes?: string;
+  field_id: number | string;
+  instructor_id?: string;
+  prerequisites?: string | null;
+  learning_outcomes?: string | null;
   course_modules?: unknown;
-  tags?: string;
+  tags?: string | null;
 }
 
-export interface UpdateCourseRequest extends Partial<CreateCourseRequest> {
-  id: number;
-}
+export type UpdateCourseRequest = Partial<CreateCourseRequest>;
 
 export interface CreateModuleRequest {
   course_id: number;
@@ -187,6 +181,4 @@ export interface CreateModuleRequest {
   is_published?: boolean;
 }
 
-export interface UpdateModuleRequest extends Partial<CreateModuleRequest> {
-  id: number;
-}
+export type UpdateModuleRequest = Partial<CreateModuleRequest>;

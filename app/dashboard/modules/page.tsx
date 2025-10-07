@@ -28,6 +28,7 @@ export default function ModulesPage() {
   const fetchModules = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       // For now, we'll get modules from courses
       // In a real implementation, you'd have a dedicated endpoint
       const response = await adminApiService.getCoursesAdmin();

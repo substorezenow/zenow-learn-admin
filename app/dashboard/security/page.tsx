@@ -55,8 +55,12 @@ export default function SecurityDashboard() {
         throw new Error('Failed to fetch security data');
       }
 
-      const data = await response.json();
-      setDashboardData(data);
+      const result = await response.json();
+      if (result.success && result.data) {
+        setDashboardData(result.data);
+      } else {
+        throw new Error(result.error || 'Failed to fetch security data');
+      }
     } catch (error) {
       console.error('Security data fetch error:', error);
       setError('Failed to load security dashboard');
@@ -132,7 +136,7 @@ export default function SecurityDashboard() {
               <Activity className="w-8 h-8 text-blue-600 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Events (24h)</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary.totalEvents24h || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary?.totalEvents24h || 0}</p>
               </div>
             </div>
           </div>
@@ -142,7 +146,7 @@ export default function SecurityDashboard() {
               <Lock className="w-8 h-8 text-red-600 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Blocked IPs</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary.blockedIPsCount || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary?.blockedIPsCount || 0}</p>
               </div>
             </div>
           </div>
@@ -152,7 +156,7 @@ export default function SecurityDashboard() {
               <AlertTriangle className="w-8 h-8 text-orange-600 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-500">Suspicious IPs</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary.suspiciousIPsCount || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData?.summary?.suspiciousIPsCount || 0}</p>
               </div>
             </div>
           </div>
@@ -176,7 +180,7 @@ export default function SecurityDashboard() {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.recentEvents.slice(0, 10).map((event, index) => (
+                {dashboardData?.recentEvents?.slice(0, 10).map((event, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center mb-1">
@@ -206,7 +210,7 @@ export default function SecurityDashboard() {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.blockedIPs.slice(0, 10).map((ip, index) => (
+                {dashboardData?.blockedIPs?.slice(0, 10).map((ip, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{ip.ip_address}</p>
@@ -231,7 +235,7 @@ export default function SecurityDashboard() {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.suspiciousActivities.slice(0, 10).map((activity, index) => (
+                {dashboardData?.suspiciousActivities?.slice(0, 10).map((activity, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{activity.ip_address}</p>
@@ -257,7 +261,7 @@ export default function SecurityDashboard() {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {dashboardData?.topEventTypes.slice(0, 10).map((eventType, index) => (
+                {dashboardData?.topEventTypes?.slice(0, 10).map((eventType, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center mb-1">

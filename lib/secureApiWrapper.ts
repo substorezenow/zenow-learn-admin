@@ -12,34 +12,6 @@ export class SecureApiWrapper {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    // Get current session ID
-    const currentSessionId = this.encryption.getCurrentSessionId();
-    
-    // Verify session with server (stealth validation)
-    try {
-      const validationResponse = await fetch('/api/auth/session-verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sessionData: currentSessionId }),
-        credentials: 'include',
-      });
-
-      if (!validationResponse.ok) {
-        throw new Error('Session verification failed');
-      }
-
-      const validationData = await validationResponse.json();
-      if (!validationData.valid) {
-        throw new Error('Session expired');
-      }
-    } catch (error) {
-      // Silent redirect to login - no console logs
-      window.location.href = '/login';
-      throw error;
-    }
-
     // Make the actual request with credentials
     const response = await fetch(endpoint, {
       ...options,
@@ -50,6 +22,12 @@ export class SecureApiWrapper {
       if (response.status === 401) {
         // Token expired or invalid, redirect to login
         window.location.href = '/login';
+        throw new Error('Session expired');
+      }
+      if (response.status === 403) {
+        // Access denied, redirect to login
+        window.location.href = '/login';
+        throw new Error('Access denied');
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }

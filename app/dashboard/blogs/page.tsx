@@ -19,6 +19,7 @@ export default function BlogsPage() {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       // Mock data for now - in real implementation, you'd call an API
       const mockBlogs: Blog[] = [
         {

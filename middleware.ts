@@ -18,8 +18,9 @@ const middleware = async (req: NextRequest) => {
   
   const isAuthPage = AUTH_PATHS.some((p) => req.nextUrl.pathname.startsWith(p));
 
-  // If token exists, validate it
+  // If token exists, do basic validation
   if (token) {
+<<<<<<< HEAD
     // Use env var for backend URL, fallback to localhost
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     let valid = false;
@@ -29,29 +30,24 @@ const middleware = async (req: NextRequest) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       let data = null;
+=======
+    // Basic JWT token validation (check if it has the right structure)
+    const tokenParts = token.split('.');
+    let valid = tokenParts.length === 3; // JWT has 3 parts
+    
+    if (valid) {
+>>>>>>> 3d4580f
       try {
-        data = await res.json();
-        console.log("response data : ", data);
-      } catch (jsonErr) {
-        console.log(
-          "[MIDDLEWARE] Error parsing JSON from validate-token:",
-          jsonErr
-        );
+        // Try to decode the JWT payload to check if it's valid
+        const payload = JSON.parse(atob(tokenParts[1]));
+        valid = payload && payload.exp && payload.exp > Date.now() / 1000;
+        console.log("[MIDDLEWARE] Token validation:", valid, "expires:", new Date(payload.exp * 1000));
+      } catch (e) {
+        valid = false;
+        console.log("[MIDDLEWARE] Token decode error:", e);
       }
-      valid = res.ok && data && data.valid === true;
-      console.log(
-        "[MIDDLEWARE] Token validation response status:",
-        res.status,
-        "| valid:",
-        valid,
-        "| data:",
-        data
-      );
-    } catch (e) {
-      // Network error, treat as invalid in production
-      valid = false;
-      console.log("[MIDDLEWARE] Token validation network error:", e);
     }
+    
     console.log(
       "[MIDDLEWARE] isAuthPage:",
       isAuthPage,

@@ -31,6 +31,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       const response = await adminApiService.getCategoriesAdmin();
       if (response.success && response.data) {
         setCategories(response.data);
@@ -69,7 +70,12 @@ export default function CategoriesPage() {
     try {
       setTogglingCategoryId(category.id);
       const response = await adminApiService.updateCategory(category.id, {
-        ...category,
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        icon_url: category.icon_url,
+        banner_image: category.banner_image,
+        sort_order: Number(category.sort_order),
         is_active: !category.is_active
       });
       

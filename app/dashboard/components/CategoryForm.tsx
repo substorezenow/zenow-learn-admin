@@ -79,7 +79,7 @@ export default function CategoryForm({ category, isOpen, onClose, onSuccess }: C
           description: formData.description || '',
           icon_url: formData.icon_url,
           banner_image: formData.banner_image,
-          sort_order: formData.sort_order,
+          sort_order: Number(formData.sort_order) || 0,
           is_active: formData.is_active
         };
         response = await adminApiService.updateCategory(category.id, updateData);
@@ -90,7 +90,7 @@ export default function CategoryForm({ category, isOpen, onClose, onSuccess }: C
           description: formData.description || '',
           icon_url: formData.icon_url,
           banner_image: formData.banner_image,
-          sort_order: formData.sort_order,
+          sort_order: Number(formData.sort_order) || 0,
           is_active: formData.is_active
         };
         response = await adminApiService.createCategory(createData);

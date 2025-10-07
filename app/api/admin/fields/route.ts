@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(`${backendUrl}/api/admin/fields`, {
       headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}`
       },
     });
 
@@ -48,8 +48,8 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${backendUrl}/api/admin/fields`, {
       method: "POST",
       headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}`
       },
       body: JSON.stringify(body),
     });

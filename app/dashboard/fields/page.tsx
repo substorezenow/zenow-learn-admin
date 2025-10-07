@@ -31,6 +31,7 @@ export default function FieldsPage() {
   const fetchFields = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       const response = await adminApiService.getFieldsAdmin();
       if (response.success && response.data) {
         setFields(response.data);
@@ -69,7 +70,12 @@ export default function FieldsPage() {
     try {
       setTogglingFieldId(field.id);
       const response = await adminApiService.updateField(field.id, {
-        ...field,
+        name: field.name,
+        slug: field.slug,
+        description: field.description,
+        icon_url: field.icon_url,
+        banner_image: field.banner_image,
+        sort_order: Number(field.sort_order),
         is_active: !field.is_active
       });
       

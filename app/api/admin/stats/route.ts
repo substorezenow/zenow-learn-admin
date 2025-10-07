@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(`${backendUrl}/api/admin/stats`, {
       headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}`
       },
     });
 

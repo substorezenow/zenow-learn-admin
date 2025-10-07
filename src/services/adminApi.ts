@@ -1,5 +1,4 @@
-// Secure Admin API Service with Browser Fingerprint Validation
-import { secureApiWrapper } from "../../lib/secureApiWrapper";
+// Secure Admin API Service with Cookie-based Authentication
 import {
   ApiResponse,
   AdminStats,
@@ -46,14 +45,36 @@ class AdminApiService {
       ...options,
     };
 
-    // Use secure API wrapper that validates browser fingerprint
-    return secureApiWrapper.secureRequest<ApiResponse<T>>(url, config);
+    // Make request with cookie-based authentication
+    const response = await fetch(url, {
+      ...config,
+      credentials: 'include', // Include httpOnly cookies
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        // Token expired or invalid, redirect to login
+        window.location.href = '/login';
+        throw new Error('Session expired');
+      }
+      if (response.status === 403) {
+        // Access denied, redirect to login
+        window.location.href = '/login';
+        throw new Error('Access denied');
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
   }
 
   // Clear session on logout
   public clearSession(): void {
     // Clear session cookie by calling logout API
-    fetch('/api/auth/logout', { method: 'POST' });
+    fetch('/api/auth/logout', { 
+      method: 'POST',
+      credentials: 'include'
+    });
   }
 
 
