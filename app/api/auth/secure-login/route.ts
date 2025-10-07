@@ -1,8 +1,9 @@
 // Secure login with browser fingerprint encryption
-export const dynamic = "force-dynamic";
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = 'edge';
+// Cloudflare Workers compatibility
+
 
 export async function POST(req: NextRequest) {
   try {

@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Cloudflare Pages configuration
-  output: 'standalone',
-  trailingSlash: false,
+  // Cloudflare Workers configuration with next-on-pages
+  // Remove output to use default Vercel format
+  trailingSlash: true,
   skipTrailingSlashRedirect: true,
   
   images: {

@@ -1,20 +1,8 @@
-# Cloudflare Pages configuration for Next.js
+# Cloudflare Workers configuration for Next.js with next-on-pages
 name = "zenow-learn-admin"
+main = ".vercel/output/static/_worker.js/index.js"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Pages build output directory
-pages_build_output_dir = ".vercel/output/static"
-
-# Environment variables (set these in Cloudflare Pages dashboard)
-# NEXT_PUBLIC_API_BASE_URL = "https://your-backend-url.com"
-# NODE_ENV = "production"
-
-# Build configuration
-[build]
-command = "npm run build"
-cwd = "."
-
-# Functions configuration
-[functions]
-runtime = "nodejs18"
+[assets]
+directory = ".vercel/output/static"

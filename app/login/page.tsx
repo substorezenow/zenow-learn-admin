@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import Link from "next/link";
 
-// Force dynamic rendering for Cloudflare Pages
-export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
+// Force dynamic rendering for Cloudflare Workers
 
 // Dynamic import to prevent SSR issues
 let SecureTokenStorage: typeof import("../../lib/secureTokenStorage").SecureTokenStorage | null = null;
