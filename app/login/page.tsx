@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import Link from "next/link";
+
+// Force dynamic rendering for Cloudflare Pages
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 // Dynamic import to prevent SSR issues
 let SecureTokenStorage: typeof import("../../lib/secureTokenStorage").SecureTokenStorage | null = null;
 if (typeof window !== 'undefined') {

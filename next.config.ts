@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Cloudflare Pages configuration
+  output: 'standalone',
+  trailingSlash: false,
+  skipTrailingSlashRedirect: true,
+  
   images: {
     remotePatterns: [
       {

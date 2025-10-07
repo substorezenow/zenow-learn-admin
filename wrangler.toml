@@ -5,3 +5,16 @@ compatibility_flags = ["nodejs_compat"]
 
 # Pages build output directory
 pages_build_output_dir = ".vercel/output/static"
+
+# Environment variables (set these in Cloudflare Pages dashboard)
+# NEXT_PUBLIC_API_BASE_URL = "https://your-backend-url.com"
+# NODE_ENV = "production"
+
+# Build configuration
+[build]
+command = "npm run build"
+cwd = "."
+
+# Functions configuration
+[functions]
+runtime = "nodejs18"

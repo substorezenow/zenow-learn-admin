@@ -18,21 +18,37 @@ export async function POST(req: NextRequest) {
     // Use env var for backend URL, fallback to localhost
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     
+    // Validate backend URL is accessible
+    if (!backendUrl || backendUrl === "undefined") {
+      console.error('Backend URL not configured properly');
+      return NextResponse.json({ error: "Backend service not configured" }, { status: 500 });
+    }
+    
     console.log('Backend URL:', backendUrl);
     console.log('Environment:', process.env.NODE_ENV);
     
-    const res = await fetch(`${backendUrl}/api/auth/login`, {
-      method: "POST",
-      body: (() => {
-        const fd = new FormData();
-        fd.append("username", username as string);
-        fd.append("password", password as string);
-        if (fingerprint) {
-          fd.append("fingerprint", fingerprint as string);
-        }
-        return fd;
-      })(),
-    });
+    let res;
+    try {
+      res = await fetch(`${backendUrl}/api/auth/login`, {
+        method: "POST",
+        body: (() => {
+          const fd = new FormData();
+          fd.append("username", username as string);
+          fd.append("password", password as string);
+          if (fingerprint) {
+            fd.append("fingerprint", fingerprint as string);
+          }
+          return fd;
+        })(),
+        // Add timeout for Cloudflare Pages
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
+    } catch (fetchError) {
+      console.error('Backend connection error:', fetchError);
+      return NextResponse.json({ 
+        error: "Backend service unavailable. Please try again later." 
+      }, { status: 503 });
+    }
 
     if (!res.ok) {
       const errorText = await res.text();
