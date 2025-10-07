@@ -12,6 +12,25 @@ interface CourseFormProps {
   onSuccess: (course: Course) => void;
 }
 
+// Helper functions for learning outcomes conversion
+const parseLearningOutcomes = (jsonString: string | null): string => {
+  if (!jsonString) return '';
+  try {
+    if (jsonString.startsWith('[')) {
+      return JSON.parse(jsonString).join('\n');
+    }
+    return jsonString;
+  } catch {
+    return jsonString;
+  }
+};
+
+const formatLearningOutcomes = (text: string): string | null => {
+  if (!text || text.trim() === '') return null;
+  const outcomes = text.split('\n').filter(outcome => outcome.trim() !== '');
+  return outcomes.length > 0 ? JSON.stringify(outcomes) : null;
+};
+
 export default function CourseForm({ course, isOpen, onClose, onSuccess }: CourseFormProps) {
   const [fields, setFields] = useState<Field[]>([]);
   const [formData, setFormData] = useState<Partial<Course>>({
@@ -22,12 +41,12 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
     banner_image: '',
     thumbnail_image: '',
     duration_hours: 0,
-    difficulty_level: 'Beginner',
+    difficulty_level: 'beginner',
     price: 0,
     is_free: false,
     is_published: false,
-    field_id: 1111116658137858049, // Default to "Reading & Writing" field
-    instructor_id: 1,
+    field_id: '1111116658137858049', // Default to "Reading & Writing" field
+    instructor_id: '1',
     prerequisites: '',
     learning_outcomes: '',
     tags: ''
@@ -45,14 +64,14 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
         banner_image: course.banner_image || '',
         thumbnail_image: course.thumbnail_image || '',
         duration_hours: course.duration_hours || 0,
-        difficulty_level: course.difficulty_level || 'Beginner',
+        difficulty_level: (course.difficulty_level || 'beginner').toLowerCase(),
         price: course.price || 0,
         is_free: course.is_free ?? false,
         is_published: course.is_published ?? false,
-        field_id: course.field_id || 1111116658137858049, // Default to "Reading & Writing" field
-        instructor_id: course.instructor_id || 1,
+        field_id: String(course.field_id) || '1111116658137858049', // Default to "Reading & Writing" field
+        instructor_id: String(course.instructor_id) || '1',
         prerequisites: course.prerequisites || '',
-        learning_outcomes: course.learning_outcomes || '',
+        learning_outcomes: parseLearningOutcomes(course.learning_outcomes || null),
         tags: course.tags || ''
       });
     } else {
@@ -64,12 +83,12 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
         banner_image: '',
         thumbnail_image: '',
         duration_hours: 0,
-        difficulty_level: 'Beginner',
+        difficulty_level: 'beginner',
         price: 0,
         is_free: false,
         is_published: false,
-        field_id: 1111116658137858049, // Default to "Reading & Writing" field
-        instructor_id: 1,
+        field_id: '1111116658137858049', // Default to "Reading & Writing" field
+        instructor_id: '1',
         prerequisites: '',
         learning_outcomes: '',
         tags: ''
@@ -116,25 +135,35 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
       let response;
       
       if (course) {
-        // Update existing course
-        const updateData: UpdateCourseRequest = {
-          id: course.id,
-          title: formData.title || '',
-          slug: formData.slug || '',
-          description: formData.description || '',
-          short_description: formData.short_description || '',
-          banner_image: formData.banner_image || '',
-          thumbnail_image: formData.thumbnail_image || '',
-          duration_hours: Number(formData.duration_hours) || 0,
-          difficulty_level: formData.difficulty_level as 'Beginner' | 'Intermediate' | 'Advanced' || 'Beginner',
-          price: Number(formData.price) || 0,
-          is_free: formData.is_free ?? false,
-          is_published: formData.is_published ?? false,
-          field_id: formData.field_id || 1111116658137858049, // Default to "Reading & Writing" field
-          prerequisites: formData.prerequisites || '',
-          learning_outcomes: formData.learning_outcomes || '',
-          tags: formData.tags || undefined
-        };
+        // Update existing course - only send changed fields
+        const updateData: UpdateCourseRequest = {};
+        
+        // Only include fields that have actually changed
+        if (formData.title !== course.title) updateData.title = formData.title || '';
+        if (formData.slug !== course.slug) updateData.slug = formData.slug || '';
+        if (formData.description !== course.description) updateData.description = formData.description || '';
+        if (formData.short_description !== course.short_description) updateData.short_description = formData.short_description || null;
+        if (formData.banner_image !== course.banner_image) updateData.banner_image = formData.banner_image || null;
+        if (formData.thumbnail_image !== course.thumbnail_image) updateData.thumbnail_image = formData.thumbnail_image || null;
+        if (Number(formData.duration_hours) !== course.duration_hours) updateData.duration_hours = Number(formData.duration_hours) || 0;
+        if ((formData.difficulty_level || 'beginner').toLowerCase() !== course.difficulty_level) updateData.difficulty_level = (formData.difficulty_level || 'beginner').toLowerCase() as 'beginner' | 'intermediate' | 'advanced';
+        if (Number(formData.price) !== course.price) updateData.price = Number(formData.price) || 0;
+        if (formData.is_free !== course.is_free) updateData.is_free = formData.is_free ?? false;
+        if (formData.is_published !== course.is_published) updateData.is_published = formData.is_published ?? false;
+        if (String(formData.field_id) !== String(course.field_id)) updateData.field_id = String(formData.field_id) || '1111116658137858049';
+        if (formData.prerequisites !== course.prerequisites) updateData.prerequisites = formData.prerequisites || null;
+        
+        // Handle learning outcomes comparison
+        const currentLearningOutcomes = parseLearningOutcomes(course.learning_outcomes || null);
+        if (formData.learning_outcomes !== currentLearningOutcomes) {
+          updateData.learning_outcomes = formatLearningOutcomes(formData.learning_outcomes || '');
+        }
+        
+        // Handle tags comparison - only update if actually changed
+        if (formData.tags !== course.tags) {
+          updateData.tags = formData.tags && formData.tags.trim() !== '' ? formData.tags : null;
+        }
+        
         response = await adminApiService.updateCourse(course.id, updateData);
       } else {
         // Create new course
@@ -142,18 +171,18 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
           title: formData.title || '',
           slug: formData.slug || '',
           description: formData.description || '',
-          short_description: formData.short_description || '',
-          banner_image: formData.banner_image || '',
-          thumbnail_image: formData.thumbnail_image || '',
+          short_description: formData.short_description || null,
+          banner_image: formData.banner_image || null,
+          thumbnail_image: formData.thumbnail_image || null,
           duration_hours: Number(formData.duration_hours) || 0,
-          difficulty_level: formData.difficulty_level as 'Beginner' | 'Intermediate' | 'Advanced' || 'Beginner',
+          difficulty_level: (formData.difficulty_level || 'beginner').toLowerCase() as 'beginner' | 'intermediate' | 'advanced',
           price: Number(formData.price) || 0,
           is_free: formData.is_free ?? false,
           is_published: formData.is_published ?? false,
-          field_id: formData.field_id || 1111116658137858049, // Default to "Reading & Writing" field
-          instructor_id: 1, // Default instructor ID
-          prerequisites: formData.prerequisites || '',
-          learning_outcomes: formData.learning_outcomes || '',
+          field_id: String(formData.field_id) || '1111116658137858049',
+          instructor_id: '1', // Default instructor ID as string
+          prerequisites: formData.prerequisites || null,
+          learning_outcomes: formatLearningOutcomes(formData.learning_outcomes || ''),
           tags: formData.tags || undefined
         };
         response = await adminApiService.createCourse(createData);
@@ -320,9 +349,9 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
               </select>
             </div>
 
@@ -404,9 +433,9 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
               name="learning_outcomes"
               value={formData.learning_outcomes}
               onChange={handleInputChange}
-              rows={2}
+              rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="What students will learn from this course"
+              placeholder="Enter each learning outcome on a new line:&#10;Learn React fundamentals&#10;Build interactive components&#10;Understand state management"
             />
           </div>
 

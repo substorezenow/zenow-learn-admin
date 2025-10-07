@@ -36,20 +36,38 @@ export default function Login() {
       formData.append("password", password);
       formData.append("fingerprint", fingerprint);
       
+      console.log("Attempting login with:", { username, fingerprint });
+      
       // Use secure login endpoint
       const res = await fetch("/api/auth/secure-login", {
         method: "POST",
         body: formData,
       });
 
+      console.log("Login response status:", res.status);
+      console.log("Login response headers:", Object.fromEntries(res.headers.entries()));
+
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Login failed");
+        let errorMessage = "Login failed";
+        try {
+          const data = await res.json();
+          errorMessage = data.error || "Login failed";
+          console.log("Login error response:", data);
+        } catch (jsonError) {
+          console.log("Failed to parse error response as JSON:", jsonError);
+          errorMessage = `Login failed (${res.status})`;
+        }
+        setError(errorMessage);
         setLoading(false);
         return;
       }
       
-      await res.json();
+      const data = await res.json();
+      console.log("Login success response:", data);
+      
+      // Check if we have a cookie set
+      const cookies = document.cookie;
+      console.log("Current cookies:", cookies);
       
       // Silent fingerprint validation - no console logs
       router.replace("/dashboard");

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.cookies.get("token")?.value;
   
@@ -10,14 +10,15 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const body = await req.json();
+  const { id } = await params;
   
   try {
-    const res = await fetch(`${backendUrl}/api/admin/courses/${params.id}`, {
+    const res = await fetch(`${backendUrl}/api/admin/courses/${id}`, {
       method: "PUT",
       headers: { 
-        Authorization: `Bearer ${token}`,
+        "Cookie": `token=${token}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(body),
@@ -40,7 +41,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.cookies.get("token")?.value;
   
@@ -48,13 +49,14 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  const { id } = await params;
   
   try {
-    const res = await fetch(`${backendUrl}/api/admin/courses/${params.id}`, {
+    const res = await fetch(`${backendUrl}/api/admin/courses/${id}`, {
       method: "DELETE",
       headers: { 
-        Authorization: `Bearer ${token}`,
+        "Cookie": `token=${token}`,
         "Content-Type": "application/json"
       },
     });

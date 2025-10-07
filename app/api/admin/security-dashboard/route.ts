@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     
+    const token = req.cookies.get("token")?.value;
+    
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const response = await fetch(`${backendUrl}/api/admin/security-dashboard`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${req.cookies.get("token")?.value}`,
+        "Cookie": `token=${token}`,
         "Content-Type": "application/json",
       },
-      credentials: "include",
     });
 
     if (!response.ok) {

@@ -16,6 +16,7 @@ export default function StudentsPage() {
   const fetchStudents = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       // Mock data for now - in real implementation, you'd call an API
       const mockStudents: Student[] = [
         {

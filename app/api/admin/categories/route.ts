@@ -7,13 +7,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   
   try {
     const res = await fetch(`${backendUrl}/api/admin/categories`, {
       headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}`
       },
     });
 
@@ -39,15 +39,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const body = await req.json();
   
   try {
     const res = await fetch(`${backendUrl}/api/admin/categories`, {
       method: "POST",
       headers: { 
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}`
       },
       body: JSON.stringify(body),
     });

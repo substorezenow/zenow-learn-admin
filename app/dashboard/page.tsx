@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       const response = await adminApiService.getAdminStats();
       if (response.success && response.data) {
         setStats(response.data);

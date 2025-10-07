@@ -1,7 +1,6 @@
 // Session verification endpoint (stealth security)
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
-import jwt from 'jsonwebtoken';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,32 +16,27 @@ export async function POST(req: NextRequest) {
       }, { status: 401 });
     }
     
-    // Decode JWT to get stored session hash
-    const decoded = jwt.decode(token) as any;
-    
-    if (!decoded || !decoded.fingerprintHash) {
-      return NextResponse.json({ 
-        valid: false, 
-        error: 'Invalid session' 
-      }, { status: 401 });
-    }
-    
-    // Generate current session hash
-    const crypto = require('crypto');
-    const currentSessionHash = crypto.createHash('sha256').update(sessionData).digest('hex');
-    
-    // Compare with stored hash
-    if (currentSessionHash !== decoded.fingerprintHash) {
-      return NextResponse.json({ 
-        valid: false, 
-        error: 'Session mismatch' 
-      }, { status: 401 });
-    }
-    
-    return NextResponse.json({ 
-      valid: true, 
-      message: 'Session verified' 
+    // Forward to backend for verification
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const res = await fetch(`${backendUrl}/api/auth/session-verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}`
+      },
+      body: JSON.stringify({ sessionData })
     });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      return NextResponse.json({ 
+        valid: false, 
+        error: data.error || 'Session verification failed' 
+      }, { status: res.status });
+    }
+    
+    return NextResponse.json(data);
     
   } catch (error) {
     return NextResponse.json({ 

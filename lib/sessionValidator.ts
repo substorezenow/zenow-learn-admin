@@ -12,20 +12,25 @@ export class SessionValidator {
     return SessionValidator.instance;
   }
 
-  // Generate unique session identifier
+  // Generate unique session identifier (deterministic)
   public generateSessionId(): string {
     if (this.sessionId) {
       return this.sessionId;
     }
 
+    // Use stable browser characteristics for consistent fingerprinting
     const components = [
       navigator.userAgent,
       navigator.language,
       screen.width + 'x' + screen.height,
       new Date().getTimezoneOffset().toString(),
       navigator.hardwareConcurrency?.toString() || 'unknown',
-      this.getCanvasSignature(),
-      this.getWebGLSignature(),
+      navigator.platform,
+      navigator.cookieEnabled.toString(),
+      // Use stable canvas signature
+      this.getStableCanvasSignature(),
+      // Use stable WebGL signature  
+      this.getStableWebGLSignature(),
     ];
 
     // Create hash from components
@@ -35,25 +40,33 @@ export class SessionValidator {
     return this.sessionId;
   }
 
-  // Canvas signature
-  private getCanvasSignature(): string {
+  // Stable canvas signature (deterministic)
+  private getStableCanvasSignature(): string {
     try {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) return 'no-canvas';
       
+      // Use consistent rendering for stable fingerprint
       ctx.textBaseline = 'top';
       ctx.font = '14px Arial';
+      ctx.fillStyle = '#000000';
       ctx.fillText('Session validation', 2, 2);
       
-      return canvas.toDataURL().slice(-50); // Last 50 chars
+      // Use a more stable part of the canvas data
+      const imageData = ctx.getImageData(0, 0, 10, 10);
+      let hash = 0;
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        hash += imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2];
+      }
+      return hash.toString(36);
     } catch {
       return 'canvas-error';
     }
   }
 
-  // WebGL signature
-  private getWebGLSignature(): string {
+  // Stable WebGL signature (deterministic)
+  private getStableWebGLSignature(): string {
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
@@ -61,8 +74,11 @@ export class SessionValidator {
       
       const renderer = gl.getParameter(gl.RENDERER);
       const vendor = gl.getParameter(gl.VENDOR);
+      const version = gl.getParameter(gl.VERSION);
       
-      return (renderer + vendor).slice(0, 20);
+      // Create stable hash from WebGL info
+      const webglInfo = (renderer + vendor + version).replace(/\s+/g, '');
+      return this.simpleHash(webglInfo).slice(0, 10);
     } catch {
       return 'webgl-error';
     }
