@@ -1,4 +1,5 @@
 // Secure login with browser fingerprint encryption
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 
 // Cloudflare Workers compatibility
