@@ -20,7 +20,6 @@ const middleware = async (req: NextRequest) => {
 
   // If token exists, do basic validation
   if (token) {
-<<<<<<< HEAD
     // Use env var for backend URL, fallback to localhost
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     let valid = false;
@@ -30,21 +29,30 @@ const middleware = async (req: NextRequest) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       let data = null;
-=======
-    // Basic JWT token validation (check if it has the right structure)
-    const tokenParts = token.split('.');
-    let valid = tokenParts.length === 3; // JWT has 3 parts
+      if (res.ok) {
+        data = await res.json();
+        valid = data.valid;
+      }
+    } catch (error) {
+      console.log("[MIDDLEWARE] Token validation error:", error);
+      valid = false;
+    }
     
-    if (valid) {
->>>>>>> 3d4580f
-      try {
-        // Try to decode the JWT payload to check if it's valid
-        const payload = JSON.parse(atob(tokenParts[1]));
-        valid = payload && payload.exp && payload.exp > Date.now() / 1000;
-        console.log("[MIDDLEWARE] Token validation:", valid, "expires:", new Date(payload.exp * 1000));
-      } catch (e) {
-        valid = false;
-        console.log("[MIDDLEWARE] Token decode error:", e);
+    // Fallback: Basic JWT token validation (check if it has the right structure)
+    if (!valid) {
+      const tokenParts = token.split('.');
+      valid = tokenParts.length === 3; // JWT has 3 parts
+      
+      if (valid) {
+        try {
+          // Try to decode the JWT payload to check if it's valid
+          const payload = JSON.parse(atob(tokenParts[1]));
+          valid = payload && payload.exp && payload.exp > Date.now() / 1000;
+          console.log("[MIDDLEWARE] Token validation:", valid, "expires:", new Date(payload.exp * 1000));
+        } catch (e) {
+          valid = false;
+          console.log("[MIDDLEWARE] Token decode error:", e);
+        }
       }
     }
     

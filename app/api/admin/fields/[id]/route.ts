@@ -15,7 +15,6 @@ export async function PUT(
 
   const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   const body = await req.json();
-  const { id } = await params;
   
   try {
     const res = await fetch(`${backendUrl}/api/admin/fields/${id}`, {
@@ -54,10 +53,6 @@ export async function DELETE(
   }
 
   const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-<<<<<<< HEAD
-=======
-  const { id } = await params;
->>>>>>> 3d4580f
   
   try {
     const res = await fetch(`${backendUrl}/api/admin/fields/${id}`, {

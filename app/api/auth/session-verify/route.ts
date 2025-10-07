@@ -17,41 +17,8 @@ export async function POST(req: NextRequest) {
       }, { status: 401 });
     }
     
-<<<<<<< HEAD
-    // Decode JWT to get stored session hash
-    const decoded = jwt.decode(token) as { fingerprintHash?: string } | null;
-    
-    if (!decoded || !decoded.fingerprintHash) {
-      return NextResponse.json({ 
-        valid: false, 
-        error: 'Invalid session' 
-      }, { status: 401 });
-    }
-    
-    // Generate current session hash using Web Crypto API
-    const encoder = new TextEncoder();
-    const data = encoder.encode(sessionData);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const currentSessionHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    // Compare with stored hash
-    if (currentSessionHash !== decoded.fingerprintHash) {
-      return NextResponse.json({ 
-        valid: false, 
-        error: 'Session mismatch' 
-      }, { status: 401 });
-    }
-    
-    return NextResponse.json({ 
-      valid: true, 
-      message: 'Session verified' 
-    });
-    
-  } catch {
-=======
     // Forward to backend for verification
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     const res = await fetch(`${backendUrl}/api/auth/session-verify`, {
       method: "POST",
       headers: {
@@ -73,7 +40,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(data);
     
   } catch (error) {
->>>>>>> 3d4580f
     return NextResponse.json({ 
       valid: false, 
       error: 'Session verification failed' 

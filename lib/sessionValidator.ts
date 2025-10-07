@@ -18,16 +18,13 @@ export class SessionValidator {
       return this.sessionId;
     }
 
-<<<<<<< HEAD
     // Check if we're in browser environment
     if (typeof window === 'undefined' || typeof navigator === 'undefined') {
       this.sessionId = 'server-side-fallback';
       return this.sessionId;
     }
 
-=======
     // Use stable browser characteristics for consistent fingerprinting
->>>>>>> 3d4580f
     const components = [
       navigator.userAgent,
       navigator.language,

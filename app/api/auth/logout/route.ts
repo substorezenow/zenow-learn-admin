@@ -1,29 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-<<<<<<< HEAD
 export const runtime = 'edge';
 
-export async function POST() {
-  // Clear ALL authentication cookies
-  const response = NextResponse.json({ success: true });
-  
-  // Clear all possible cookie names that might contain tokens
-  const cookieNames = [
-    'token',
-    'admin_access_token', 
-    'auth_token',
-    'jwt',
-    'access_token'
-  ];
-  
-  cookieNames.forEach(name => {
-    response.cookies.set(name, '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0, // Expire immediately
-=======
 export async function POST(req: NextRequest) {
   try {
     // Get token from httpOnly cookie
@@ -31,7 +9,7 @@ export async function POST(req: NextRequest) {
     
     // Call backend logout if token exists
     if (token) {
-      const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
       try {
         await fetch(`${backendUrl}/api/auth/logout`, {
           method: "POST",
@@ -64,7 +42,6 @@ export async function POST(req: NextRequest) {
         path: "/",
         maxAge: 0, // Expire immediately
       });
->>>>>>> 3d4580f
     });
     
     return response;
