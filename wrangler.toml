@@ -6,4 +6,3 @@ compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = ".vercel/output/static"
-ignore = [".assetsignore"]
