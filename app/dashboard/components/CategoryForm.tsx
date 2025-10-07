@@ -73,7 +73,6 @@ export default function CategoryForm({ category, isOpen, onClose, onSuccess }: C
       let response;
       if (category?.id) {
         const updateData: UpdateCategoryRequest = {
-          id: category.id,
           name: formData.name || '',
           slug: formData.slug || '',
           description: formData.description || '',

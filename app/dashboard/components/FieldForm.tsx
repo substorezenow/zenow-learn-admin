@@ -79,7 +79,6 @@ export default function FieldForm({ field, isOpen, onClose, onSuccess }: FieldFo
       if (field) {
         // Update existing field
         const updateData: UpdateFieldRequest = {
-          id: field.id,
           name: formData.name || '',
           slug: formData.slug || '',
           description: formData.description || '',

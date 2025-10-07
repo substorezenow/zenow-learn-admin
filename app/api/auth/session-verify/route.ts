@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json(data);
     
-  } catch (error) {
+  } catch {
     return NextResponse.json({ 
       valid: false, 
       error: 'Session verification failed' 

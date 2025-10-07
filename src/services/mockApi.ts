@@ -93,7 +93,7 @@ class MockApiService {
       field_id: 1,
       field_name: "Frontend Development",
       category_name: "Web Development",
-      instructor_id: 1,
+      instructor_id: "1",
       instructor_name: "John Doe",
       enrolled_students: 1250,
       rating: 4.8,
@@ -117,7 +117,7 @@ class MockApiService {
       field_id: 2,
       field_name: "Backend Development",
       category_name: "Web Development",
-      instructor_id: 2,
+      instructor_id: "2",
       instructor_name: "Jane Smith",
       enrolled_students: 0,
       rating: 0,
@@ -258,9 +258,9 @@ class MockApiService {
       title: courseData.title,
       slug: courseData.slug || courseData.title.toLowerCase().replace(/\s+/g, '-'),
       description: courseData.description,
-      short_description: courseData.short_description,
-      banner_image: courseData.banner_image,
-      thumbnail_image: courseData.thumbnail_image,
+      short_description: courseData.short_description || undefined,
+      banner_image: courseData.banner_image || undefined,
+      thumbnail_image: courseData.thumbnail_image || undefined,
       duration_hours: courseData.duration_hours,
       difficulty_level: courseData.difficulty_level,
       price: courseData.price,
@@ -284,9 +284,17 @@ class MockApiService {
     if (index === -1) {
       return { success: false, error: 'Course not found' };
     }
+    // Filter out null values and convert them to undefined
+    const filteredCourseData = Object.fromEntries(
+      Object.entries(courseData).map(([key, value]) => [
+        key, 
+        value === null ? undefined : value
+      ])
+    );
+    
     this.mockCourses[index] = { 
       ...this.mockCourses[index], 
-      ...courseData,
+      ...filteredCourseData,
       course_modules: courseData.course_modules as CourseModule[] | undefined,
       updated_at: new Date().toISOString() 
     };
