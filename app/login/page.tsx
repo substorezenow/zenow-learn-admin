@@ -53,7 +53,15 @@ export default function Login() {
   const runDebugTest = async () => {
     console.log('🔍 [DEBUG] Starting debug test...');
     try {
+      // Test minimal endpoint first
+      console.log('🧪 [DEBUG] Testing minimal endpoint...');
+      const minimalRes = await fetch('/api/minimal');
+      const minimalData = await minimalRes.json();
+      console.log('🧪 [DEBUG] Minimal endpoint response:', minimalData);
+      console.log(minimalData.consoleLog || '🧪 [DEBUG] No console log from minimal API');
+      
       // Test debug endpoint
+      console.log('🔍 [DEBUG] Testing debug endpoint...');
       const debugRes = await fetch('/api/debug');
       const debugData = await debugRes.json();
       console.log('🔍 [DEBUG] Debug endpoint response:', debugData);

@@ -4,20 +4,16 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
+    // Simplified debug info to avoid Cloudflare Workers issues
     const debugInfo = {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
       backendUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080",
       requestUrl: req.url,
-      requestHeaders: Object.fromEntries(req.headers.entries()),
-      cookies: req.cookies.getAll().map(cookie => ({ name: cookie.name, value: cookie.value ? '***' : 'empty' })),
-      userAgent: req.headers.get('user-agent'),
-      cfRay: req.headers.get('cf-ray'),
-      cfConnectingIp: req.headers.get('cf-connecting-ip'),
-      cfCountry: req.headers.get('cf-ipcountry'),
-      cfRegion: req.headers.get('cf-region'),
-      cfCity: req.headers.get('cf-city'),
-      allEnvVars: Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC')),
+      userAgent: req.headers.get('user-agent') || 'unknown',
+      cfRay: req.headers.get('cf-ray') || 'not-cloudflare',
+      hasBackendUrl: !!process.env.NEXT_PUBLIC_API_BASE_URL,
+      envVarsCount: Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC')).length,
     };
 
     return NextResponse.json({
@@ -31,7 +27,6 @@ export async function GET(req: NextRequest) {
       success: false,
       error: 'Debug error',
       message: (error as Error).message,
-      stack: (error as Error).stack,
       consoleLog: '❌ [DEBUG] Error occurred'
     }, { status: 500 });
   }

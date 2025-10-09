@@ -31,16 +31,12 @@ export async function POST(req: NextRequest) {
     // Use env var for backend URL, fallback to localhost
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     
-    console.log('🔐 [SECURE-LOGIN] Backend URL:', backendUrl);
-    console.log('🔐 [SECURE-LOGIN] Environment:', process.env.NODE_ENV);
-    console.log('🔐 [SECURE-LOGIN] All env vars:', Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC')));
-    
     // Validate backend URL is accessible
     if (!backendUrl || backendUrl === "undefined") {
-      console.error('❌ [SECURE-LOGIN] Backend URL not configured properly');
       return NextResponse.json({ 
         error: "Backend service not configured",
-        details: `Backend URL: ${backendUrl}` 
+        details: `Backend URL: ${backendUrl}`,
+        consoleLog: '❌ [SECURE-LOGIN] Backend URL not configured'
       }, { status: 500 });
     }
     
@@ -119,18 +115,8 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "Login successful. Token secured with browser fingerprint validation.",
       consoleLog: '✅ [SECURE-LOGIN] Login successful, cookie set',
-      debugInfo: {
-        tokenLength: token.length,
-        environment: process.env.NODE_ENV,
-        backendUrl: backendUrl,
-        cookieConfig: {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          path: "/",
-          maxAge: 60 * 60 * 4
-        }
-      }
+      tokenLength: token.length,
+      environment: process.env.NODE_ENV
     });
     
     response.cookies.set("token", token, {
