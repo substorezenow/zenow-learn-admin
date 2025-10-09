@@ -27,7 +27,27 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [fingerprint, setFingerprint] = useState("");
   const [isClient, setIsClient] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<{
+    success?: boolean;
+    message?: string;
+    debug?: {
+      timestamp: string;
+      environment: string;
+      backendUrl: string;
+      requestUrl: string;
+      requestHeaders: Record<string, string>;
+      cookies: Array<{ name: string; value: string }>;
+      userAgent: string;
+      cfRay?: string;
+      cfConnectingIp?: string;
+      cfCountry?: string;
+      cfRegion?: string;
+      cfCity?: string;
+    };
+    backendHealth?: unknown;
+    backendError?: string;
+    error?: string;
+  } | null>(null);
   const router = useRouter();
 
   const runDebugTest = async () => {
@@ -50,12 +70,12 @@ export default function Login() {
         setDebugInfo(prev => ({ ...prev, backendHealth: backendData }));
       } catch (backendError) {
         console.error('🔍 [DEBUG] Backend connectivity error:', backendError);
-        setDebugInfo(prev => ({ ...prev, backendError: backendError.message }));
+        setDebugInfo(prev => ({ ...prev, backendError: (backendError as Error).message }));
       }
       
     } catch (error) {
       console.error('🔍 [DEBUG] Debug test error:', error);
-      setDebugInfo({ error: error.message });
+      setDebugInfo({ error: (error as Error).message });
     }
   };
 
@@ -158,9 +178,9 @@ export default function Login() {
     } catch (error) {
       console.error('❌ [LOGIN-PAGE] Login error:', error);
       console.error('❌ [LOGIN-PAGE] Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
       });
       setError("Something went wrong. Try again.");
     } finally {
