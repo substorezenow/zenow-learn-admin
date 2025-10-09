@@ -11,7 +11,7 @@ export default function SplashScreen() {
     return () => clearTimeout(timer);
   }, []);
   return (
-    <div className="relative  min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 overflow-hidden">
       {/* Animated background blobs */}
       <motion.div
         className="absolute -top-32 -left-32 w-96 h-96 bg-pink-400 opacity-30 rounded-full filter blur-3xl"
