@@ -6,3 +6,6 @@ compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = ".vercel/output/static"
+
+[vars]
+NEXT_PUBLIC_API_BASE_URL = "https://zenow-learn-backend-710009987783.asia-south1.run.app"

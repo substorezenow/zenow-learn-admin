@@ -27,7 +27,37 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [fingerprint, setFingerprint] = useState("");
   const [isClient, setIsClient] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
   const router = useRouter();
+
+  const runDebugTest = async () => {
+    console.log('🔍 [DEBUG] Starting debug test...');
+    try {
+      // Test debug endpoint
+      const debugRes = await fetch('/api/debug');
+      const debugData = await debugRes.json();
+      console.log('🔍 [DEBUG] Debug endpoint response:', debugData);
+      setDebugInfo(debugData);
+      
+      // Test backend connectivity
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+      console.log('🔍 [DEBUG] Testing backend connectivity to:', backendUrl);
+      
+      try {
+        const backendTest = await fetch(`${backendUrl}/api/health`);
+        const backendData = await backendTest.json();
+        console.log('🔍 [DEBUG] Backend health check:', backendData);
+        setDebugInfo(prev => ({ ...prev, backendHealth: backendData }));
+      } catch (backendError) {
+        console.error('🔍 [DEBUG] Backend connectivity error:', backendError);
+        setDebugInfo(prev => ({ ...prev, backendError: backendError.message }));
+      }
+      
+    } catch (error) {
+      console.error('🔍 [DEBUG] Debug test error:', error);
+      setDebugInfo({ error: error.message });
+    }
+  };
 
   useEffect(() => {
     // Mark as client-side rendered
@@ -49,7 +79,13 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔐 [LOGIN-PAGE] Starting login process');
+    console.log('🔐 [LOGIN-PAGE] Username:', username ? '***' : 'missing');
+    console.log('🔐 [LOGIN-PAGE] Password:', password ? '***' : 'missing');
+    console.log('🔐 [LOGIN-PAGE] Fingerprint:', fingerprint ? '***' : 'missing');
+    
     if (!username || !password) {
+      console.log('❌ [LOGIN-PAGE] Missing username or password');
       setError("Please enter both username and password.");
       return;
     }
@@ -61,7 +97,16 @@ export default function Login() {
       formData.append("password", password);
       formData.append("fingerprint", fingerprint || "fallback");
       
-      console.log("Attempting login with:", { username, fingerprint });
+      console.log("🔐 [LOGIN-PAGE] Attempting login with:", { 
+        username, 
+        fingerprint: fingerprint ? '***' : 'missing',
+        formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
+          key,
+          value: key === 'password' ? '***' : value
+        }))
+      });
+      
+      console.log('🔐 [LOGIN-PAGE] Calling /api/auth/secure-login');
       
       // Use secure login endpoint
       const res = await fetch("/api/auth/secure-login", {
@@ -69,17 +114,24 @@ export default function Login() {
         body: formData,
       });
 
-      console.log("Login response status:", res.status);
-      console.log("Login response headers:", Object.fromEntries(res.headers.entries()));
+      console.log("🔐 [LOGIN-PAGE] Login response status:", res.status);
+      console.log("🔐 [LOGIN-PAGE] Login response headers:", Object.fromEntries(res.headers.entries()));
+      console.log("🔐 [LOGIN-PAGE] Response URL:", res.url);
+      console.log("🔐 [LOGIN-PAGE] Response ok:", res.ok);
+      console.log("🔐 [LOGIN-PAGE] Response statusText:", res.statusText);
+
+      // Log response body for debugging
+      const responseText = await res.clone().text();
+      console.log("🔐 [LOGIN-PAGE] Raw response body:", responseText);
 
       if (!res.ok) {
         let errorMessage = "Login failed";
         try {
           const data = await res.json();
           errorMessage = data.error || "Login failed";
-          console.log("Login error response:", data);
+          console.log("❌ [LOGIN-PAGE] Login error response:", data);
         } catch (jsonError) {
-          console.log("Failed to parse error response as JSON:", jsonError);
+          console.log("❌ [LOGIN-PAGE] Failed to parse error response as JSON:", jsonError);
           errorMessage = `Login failed (${res.status})`;
         }
         setError(errorMessage);
@@ -88,16 +140,28 @@ export default function Login() {
       }
       
       const data = await res.json();
-      console.log("Login success response:", data);
+      console.log("✅ [LOGIN-PAGE] Login success response:", data);
       
       // Check if we have a cookie set
       const cookies = document.cookie;
-      console.log("Current cookies:", cookies);
+      console.log("🔐 [LOGIN-PAGE] Current cookies:", cookies);
+      console.log("🔐 [LOGIN-PAGE] Cookie includes token:", cookies.includes('token'));
+      console.log("🔐 [LOGIN-PAGE] All cookies parsed:", document.cookie.split(';').map(c => c.trim()));
       
+      // Check if token cookie was set in response headers
+      const setCookieHeader = res.headers.get('set-cookie');
+      console.log("🔐 [LOGIN-PAGE] Set-Cookie header:", setCookieHeader);
+      
+      console.log('✅ [LOGIN-PAGE] Login successful, redirecting to dashboard');
       // Silent fingerprint validation - no console logs
       router.replace("/dashboard");
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ [LOGIN-PAGE] Login error:', error);
+      console.error('❌ [LOGIN-PAGE] Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
@@ -179,6 +243,21 @@ export default function Login() {
           </button>
         </form>
         <div className="flex flex-col gap-2 mt-2">
+          <button
+            type="button"
+            onClick={runDebugTest}
+            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 rounded transition-colors text-sm"
+          >
+            🔍 Run Debug Test
+          </button>
+          {debugInfo && (
+            <div className="bg-gray-100 p-3 rounded text-xs">
+              <div className="font-semibold mb-2">Debug Info:</div>
+              <pre className="whitespace-pre-wrap overflow-auto max-h-40">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </div>
+          )}
           <Link
             href="/forgot-password"
             className="text-indigo-600 hover:underline text-sm text-center"
