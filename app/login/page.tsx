@@ -57,6 +57,7 @@ export default function Login() {
       const debugRes = await fetch('/api/debug');
       const debugData = await debugRes.json();
       console.log('🔍 [DEBUG] Debug endpoint response:', debugData);
+      console.log(debugData.consoleLog || '🔍 [DEBUG] No console log from API');
       setDebugInfo(debugData);
       
       // Test backend connectivity
@@ -161,6 +162,10 @@ export default function Login() {
       
       const data = await res.json();
       console.log("✅ [LOGIN-PAGE] Login success response:", data);
+      console.log(data.consoleLog || '✅ [LOGIN-PAGE] No console log from API');
+      if (data.debugInfo) {
+        console.log("🔍 [LOGIN-PAGE] Debug info from API:", data.debugInfo);
+      }
       
       // Check if we have a cookie set
       const cookies = document.cookie;

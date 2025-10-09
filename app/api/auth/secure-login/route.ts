@@ -33,11 +33,15 @@ export async function POST(req: NextRequest) {
     
     console.log('🔐 [SECURE-LOGIN] Backend URL:', backendUrl);
     console.log('🔐 [SECURE-LOGIN] Environment:', process.env.NODE_ENV);
+    console.log('🔐 [SECURE-LOGIN] All env vars:', Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC')));
     
     // Validate backend URL is accessible
     if (!backendUrl || backendUrl === "undefined") {
       console.error('❌ [SECURE-LOGIN] Backend URL not configured properly');
-      return NextResponse.json({ error: "Backend service not configured" }, { status: 500 });
+      return NextResponse.json({ 
+        error: "Backend service not configured",
+        details: `Backend URL: ${backendUrl}` 
+      }, { status: 500 });
     }
     
     let res;
@@ -113,15 +117,20 @@ export async function POST(req: NextRequest) {
     // Set httpOnly cookie for frontend domain
     const response = NextResponse.json({ 
       success: true,
-      message: "Login successful. Token secured with browser fingerprint validation."
-    });
-    
-    console.log('✅ [SECURE-LOGIN] Setting cookie with config:', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 4
+      message: "Login successful. Token secured with browser fingerprint validation.",
+      consoleLog: '✅ [SECURE-LOGIN] Login successful, cookie set',
+      debugInfo: {
+        tokenLength: token.length,
+        environment: process.env.NODE_ENV,
+        backendUrl: backendUrl,
+        cookieConfig: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: 60 * 60 * 4
+        }
+      }
     });
     
     response.cookies.set("token", token, {
@@ -132,8 +141,6 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 4, // 4 hours
     });
     
-    console.log('✅ [SECURE-LOGIN] Cookie set, checking response cookies');
-    console.log('✅ [SECURE-LOGIN] Response cookies:', response.cookies.getAll());
     return response;
   } catch (error) {
     console.error('❌ [SECURE-LOGIN] Unexpected error:', error);
@@ -142,6 +149,9 @@ export async function POST(req: NextRequest) {
       message: (error as Error).message,
       stack: (error as Error).stack
     });
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Internal server error",
+      details: (error as Error).message 
+    }, { status: 500 });
   }
 }
