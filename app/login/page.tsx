@@ -53,20 +53,40 @@ export default function Login() {
   const runDebugTest = async () => {
     console.log('🔍 [DEBUG] Starting debug test...');
     try {
-      // Test minimal endpoint first
+      // Test ultra-simple hello endpoint first
+      console.log('👋 [DEBUG] Testing hello endpoint...');
+      try {
+        const helloRes = await fetch('/api/hello');
+        const helloText = await helloRes.text();
+        console.log('👋 [DEBUG] Hello endpoint response:', helloText);
+        console.log('👋 [DEBUG] Hello endpoint status:', helloRes.status);
+      } catch (helloError) {
+        console.error('👋 [DEBUG] Hello endpoint error:', helloError);
+      }
+      
+      // Test minimal endpoint
       console.log('🧪 [DEBUG] Testing minimal endpoint...');
-      const minimalRes = await fetch('/api/minimal');
-      const minimalData = await minimalRes.json();
-      console.log('🧪 [DEBUG] Minimal endpoint response:', minimalData);
-      console.log(minimalData.consoleLog || '🧪 [DEBUG] No console log from minimal API');
+      try {
+        const minimalRes = await fetch('/api/minimal');
+        const minimalData = await minimalRes.json();
+        console.log('🧪 [DEBUG] Minimal endpoint response:', minimalData);
+        console.log(minimalData.consoleLog || '🧪 [DEBUG] No console log from minimal API');
+      } catch (minimalError) {
+        console.error('🧪 [DEBUG] Minimal endpoint error:', minimalError);
+      }
       
       // Test debug endpoint
       console.log('🔍 [DEBUG] Testing debug endpoint...');
-      const debugRes = await fetch('/api/debug');
-      const debugData = await debugRes.json();
-      console.log('🔍 [DEBUG] Debug endpoint response:', debugData);
-      console.log(debugData.consoleLog || '🔍 [DEBUG] No console log from API');
-      setDebugInfo(debugData);
+      try {
+        const debugRes = await fetch('/api/debug');
+        const debugData = await debugRes.json();
+        console.log('🔍 [DEBUG] Debug endpoint response:', debugData);
+        console.log(debugData.consoleLog || '🔍 [DEBUG] No console log from API');
+        setDebugInfo(debugData);
+      } catch (debugError) {
+        console.error('🔍 [DEBUG] Debug endpoint error:', debugError);
+        setDebugInfo({ error: 'Debug endpoint failed' });
+      }
       
       // Test backend connectivity
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";

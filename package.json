@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "build:workers": "npx @cloudflare/next-on-pages && cp .assetsignore .vercel/output/static/.assetsignore",
+    "build:workers": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",
     "lint": "eslint",
     "deploy": "npm run build:workers && wrangler deploy"

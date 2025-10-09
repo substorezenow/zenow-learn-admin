@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Cloudflare Workers configuration with next-on-pages
-  // Remove output to use default Vercel format
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
   
@@ -82,7 +81,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Cross-Origin-Resource-Policy',
-            value: 'same-origin',
+            value: 'cross-origin',
           },
           {
             key: 'Strict-Transport-Security',
