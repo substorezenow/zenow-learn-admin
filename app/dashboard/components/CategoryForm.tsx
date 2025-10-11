@@ -1,73 +1,89 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import adminApiService from '../../../src/services/adminApi';
 import { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../../../src/types';
+import { useFormValidation } from '../../../lib/useFormValidation';
+import { ValidationSchemas } from '../../../src/types';
+import { InputField, TextareaField, CheckboxField, SubmitButton } from '../../../lib/formFields';
+import Modal from '../../../src/components/ui/Modal';
 
 interface CategoryFormProps {
   category?: Category | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (category: Category) => void;
+  onError?: (error: string) => void;
 }
 
-export default function CategoryForm({ category, isOpen, onClose, onSuccess }: CategoryFormProps) {
-  const [formData, setFormData] = useState<Partial<Category>>({
-    name: '',
-    slug: '',
-    description: '',
-    icon_url: '',
-    banner_image: '',
-    is_active: true,
-    sort_order: 0
+const initialData = {
+  name: '',
+  slug: '',
+  description: '',
+  icon_url: '',
+  banner_image: '',
+  is_active: true,
+  sort_order: 0
+};
+
+export default function CategoryForm({ category, isOpen, onClose, onSuccess, onError }: CategoryFormProps) {
+
+  const {
+    formData,
+    validationState,
+    setFieldValue,
+    setFieldTouched,
+    validateForm,
+    resetForm,
+    clearErrors,
+    getFieldError,
+    isFormValid
+  } = useFormValidation({
+    initialData,
+    validationSchema: ValidationSchemas.validateCategory
   });
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (category) {
-      setFormData({
-        name: category.name || '',
-        slug: category.slug || '',
-        description: category.description || '',
-        icon_url: category.icon_url || '',
-        banner_image: category.banner_image || '',
-        is_active: category.is_active ?? true,
-        sort_order: Number(category.sort_order) || 0
-      });
+      setFieldValue('name', category.name || '');
+      setFieldValue('slug', category.slug || '');
+      setFieldValue('description', category.description || '');
+      setFieldValue('icon_url', category.icon_url || '');
+      setFieldValue('banner_image', category.banner_image || '');
+      setFieldValue('is_active', category.is_active ?? true);
+      setFieldValue('sort_order', Number(category.sort_order) || 0);
     } else {
-      setFormData({
-        name: '',
-        slug: '',
-        description: '',
-        icon_url: '',
-        banner_image: '',
-        is_active: true,
-        sort_order: 0
-      });
+      resetForm();
     }
-  }, [category]);
+  }, [category, setFieldValue, resetForm]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    
-    if (name === 'name' && !formData.slug) {
+  const handleInputChange = (field: string, value: string | number | boolean | string[]) => {
+    if (field === 'name' && !formData.slug && typeof value === 'string') {
       // Auto-generate slug from name
       const slug = value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      setFormData(prev => ({ ...prev, [name]: value, slug }));
+      setFieldValue('name', value);
+      setFieldValue('slug', slug);
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value 
-      }));
+      setFieldValue(field, value);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setSubmitError(null);
+    clearErrors();
+
+    // Validate form before submission
+    const validationResult = validateForm();
+    if (!validationResult.isValid) {
+      setLoading(false);
+      return;
+    }
 
     try {
       let response;
@@ -99,153 +115,145 @@ export default function CategoryForm({ category, isOpen, onClose, onSuccess }: C
         onSuccess(response.data);
         onClose();
       } else {
-        setError(response.error || 'Failed to save category');
+        setSubmitError(response.error || 'Failed to save category');
       }
     } catch (err) {
       console.error('Error saving category:', err);
-      setError('Error saving category');
+      const errorMessage = err instanceof Error ? err.message : 'Error saving category';
+      setSubmitError(errorMessage);
+      
+      // Call the error handler if provided
+      if (onError) {
+        onError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">
-            {category?.id ? 'Edit Category' : 'Create New Category'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={category?.id ? 'Edit Category' : 'Create New Category'}
+      size="lg"
+    >
 
-        {error && (
+        {submitError && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+            {submitError}
+          </div>
+        )}
+
+        {validationState.errors.length > 0 && (
+          <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+            <p className="font-medium">Please fix the following errors:</p>
+            <ul className="mt-1 list-disc list-inside">
+              {validationState.errors.map((error, index) => (
+                <li key={index}>{error.message}</li>
+              ))}
+            </ul>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Category Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Web Development"
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <InputField
+              name="name"
+              value={formData.name}
+              onChange={(value) => handleInputChange('name', value)}
+              onBlur={() => setFieldTouched('name')}
+              error={getFieldError('name')}
+              touched={validationState.touchedFields.has('name')}
+              required
+              label="Category Name"
+              placeholder="e.g., Web Development"
+              helpText="Enter a descriptive name for the category"
+            />
 
-            <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
-                Slug *
-              </label>
-              <input
-                type="text"
-                id="slug"
-                name="slug"
-                value={formData.slug}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., web-development"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Brief description of this category"
+            <InputField
+              name="slug"
+              value={formData.slug}
+              onChange={(value) => handleInputChange('slug', value)}
+              onBlur={() => setFieldTouched('slug')}
+              error={getFieldError('slug')}
+              touched={validationState.touchedFields.has('slug')}
+              required
+              label="Slug"
+              placeholder="e.g., web-development"
+              helpText="URL-friendly identifier (auto-generated from name)"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="icon_url" className="block text-sm font-medium text-gray-700 mb-1">
-                Icon URL
-              </label>
-              <input
-                type="url"
-                id="icon_url"
-                name="icon_url"
-                value={formData.icon_url}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/icon.svg"
-              />
-            </div>
+          <TextareaField
+            name="description"
+            value={formData.description}
+            onChange={(value) => handleInputChange('description', value)}
+            onBlur={() => setFieldTouched('description')}
+            error={getFieldError('description')}
+            touched={validationState.touchedFields.has('description')}
+            label="Description"
+            placeholder="Brief description of this category"
+            helpText="Optional description (max 1000 characters)"
+            rows={3}
+          />
 
-            <div>
-              <label htmlFor="banner_image" className="block text-sm font-medium text-gray-700 mb-1">
-                Banner Image URL
-              </label>
-              <input
-                type="url"
-                id="banner_image"
-                name="banner_image"
-                value={formData.banner_image}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/banner.jpg"
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <InputField
+              name="icon_url"
+              value={formData.icon_url}
+              onChange={(value) => handleInputChange('icon_url', value)}
+              onBlur={() => setFieldTouched('icon_url')}
+              error={getFieldError('icon_url')}
+              touched={validationState.touchedFields.has('icon_url')}
+              type="url"
+              label="Icon URL"
+              placeholder="https://example.com/icon.svg"
+              helpText="Optional icon URL for the category"
+            />
+
+            <InputField
+              name="banner_image"
+              value={formData.banner_image}
+              onChange={(value) => handleInputChange('banner_image', value)}
+              onBlur={() => setFieldTouched('banner_image')}
+              error={getFieldError('banner_image')}
+              touched={validationState.touchedFields.has('banner_image')}
+              type="url"
+              label="Banner Image URL"
+              placeholder="https://example.com/banner.jpg"
+              helpText="Optional banner image URL"
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="sort_order" className="block text-sm font-medium text-gray-700 mb-1">
-                Sort Order
-              </label>
-              <input
-                type="number"
-                id="sort_order"
-                name="sort_order"
-                value={formData.sort_order}
-                onChange={handleInputChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <InputField
+              name="sort_order"
+              value={formData.sort_order}
+              onChange={(value) => handleInputChange('sort_order', value)}
+              onBlur={() => setFieldTouched('sort_order')}
+              error={getFieldError('sort_order')}
+              touched={validationState.touchedFields.has('sort_order')}
+              type="number"
+              min={0}
+              label="Sort Order"
+              placeholder="0"
+              helpText="Order for displaying categories (0 = first)"
+            />
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="is_active"
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
-                Active (visible to users)
-              </label>
-            </div>
+            <CheckboxField
+              name="is_active"
+              value={formData.is_active}
+              onChange={(value) => handleInputChange('is_active', value)}
+              onBlur={() => setFieldTouched('is_active')}
+              error={getFieldError('is_active')}
+              touched={validationState.touchedFields.has('is_active')}
+              label="Active (visible to users)"
+              helpText="Uncheck to hide this category from users"
+            />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
@@ -254,17 +262,18 @@ export default function CategoryForm({ category, isOpen, onClose, onSuccess }: C
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            <SubmitButton
+              loading={loading}
+              disabled={!isFormValid}
+              loadingText={category?.id ? 'Updating...' : 'Creating...'}
             >
-              <Save className="w-4 h-4" />
-              {loading ? 'Saving...' : (category?.id ? 'Update' : 'Create')}
-            </button>
+              <div className="flex items-center gap-2">
+                <Save className="w-4 h-4" />
+                {category?.id ? 'Update Category' : 'Create Category'}
+              </div>
+            </SubmitButton>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

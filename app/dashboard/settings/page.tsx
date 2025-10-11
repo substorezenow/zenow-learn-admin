@@ -2,15 +2,16 @@
 
 import React, { useState } from 'react';
 import { Save, Settings, Database, Mail, Shield, Globe } from 'lucide-react';
+import { InputField, TextareaField, CheckboxField, SelectField, SubmitButton } from '../../../lib/formFields';
 
 export default function AdminSettingsPage() {
-  const [settings, setSettings] = useState({
+  const initialData = {
     siteName: 'Zenow Academy',
     siteDescription: 'Learn and grow with our comprehensive online courses',
     siteUrl: 'https://zenowacademy.com',
     adminEmail: 'admin@zenowacademy.com',
     supportEmail: 'support@zenowacademy.com',
-    maxFileSize: '10',
+    maxFileSize: 10,
     allowedFileTypes: 'jpg,jpeg,png,gif,pdf,mp4,mp3',
     enableRegistration: true,
     requireEmailVerification: true,
@@ -33,17 +34,14 @@ export default function AdminSettingsPage() {
     smtpUsername: '',
     smtpPassword: '',
     smtpEncryption: 'tls'
-  });
+  };
 
+  const [formData, setFormData] = useState(initialData);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    setSettings(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
+  const handleInputChange = (fieldName: string, value: string | number | boolean | string[]) => {
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
   };
 
   const handleSave = async () => {
@@ -64,280 +62,351 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Settings</h1>
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          {loading ? 'Saving...' : 'Save Settings'}
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Settings className="w-6 h-6" />
+          Admin Settings
+        </h1>
+        <p className="text-gray-600 mt-1">Manage your platform settings and configuration</p>
       </div>
 
       {message && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+        <div className={`mb-6 p-4 rounded-md ${
+          message.type === 'success' 
+            ? 'bg-green-100 border border-green-400 text-green-700' 
+            : 'bg-red-100 border border-red-400 text-red-700'
         }`}>
           {message.text}
         </div>
       )}
 
-      <div className="space-y-8">
+      <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-8">
         {/* General Settings */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Settings className="w-6 h-6 text-blue-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">General Settings</h2>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Globe className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-semibold text-gray-900">General Settings</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="siteName" className="block text-sm font-medium text-gray-700 mb-1">
-                Site Name
-              </label>
-              <input
-                type="text"
-                id="siteName"
-                name="siteName"
-                value={settings.siteName}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="siteUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                Site URL
-              </label>
-              <input
-                type="url"
-                id="siteUrl"
-                name="siteUrl"
-                value={settings.siteUrl}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
+            <InputField
+              name="siteName"
+              value={formData.siteName}
+              onChange={(value) => handleInputChange('siteName', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              label="Site Name"
+              placeholder="Enter site name"
+            />
+
+            <InputField
+              name="siteUrl"
+              value={formData.siteUrl}
+              onChange={(value) => handleInputChange('siteUrl', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              type="url"
+              label="Site URL"
+              placeholder="https://example.com"
+            />
+
             <div className="md:col-span-2">
-              <label htmlFor="siteDescription" className="block text-sm font-medium text-gray-700 mb-1">
-                Site Description
-              </label>
-              <textarea
-                id="siteDescription"
+              <TextareaField
                 name="siteDescription"
-                value={settings.siteDescription}
-                onChange={handleInputChange}
+                value={formData.siteDescription}
+                onChange={(value) => handleInputChange('siteDescription', value)}
+                onBlur={() => {}}
+                error={undefined}
+                label="Site Description"
+                placeholder="Brief description of your platform"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            <InputField
+              name="adminEmail"
+              value={formData.adminEmail}
+              onChange={(value) => handleInputChange('adminEmail', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              type="email"
+              label="Admin Email"
+              placeholder="admin@example.com"
+            />
+
+            <InputField
+              name="supportEmail"
+              value={formData.supportEmail}
+              onChange={(value) => handleInputChange('supportEmail', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              type="email"
+              label="Support Email"
+              placeholder="support@example.com"
+            />
+          </div>
+        </div>
+
+        {/* File Upload Settings */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Database className="w-5 h-5 text-green-600" />
+            <h2 className="text-lg font-semibold text-gray-900">File Upload Settings</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputField
+              name="maxFileSize"
+              value={formData.maxFileSize}
+              onChange={(value) => handleInputChange('maxFileSize', Number(value))}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              type="number"
+              min={1}
+              max={100}
+              label="Max File Size (MB)"
+              placeholder="10"
+            />
+
+            <InputField
+              name="allowedFileTypes"
+              value={formData.allowedFileTypes}
+              onChange={(value) => handleInputChange('allowedFileTypes', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              label="Allowed File Types"
+              placeholder="jpg,jpeg,png,gif,pdf"
+              helpText="Comma-separated list of allowed file extensions"
+            />
+          </div>
+        </div>
+
+        {/* Feature Toggles */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-purple-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Feature Settings</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CheckboxField
+              name="enableRegistration"
+              value={formData.enableRegistration}
+              onChange={(value) => handleInputChange('enableRegistration', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="Enable User Registration"
+            />
+
+            <CheckboxField
+              name="requireEmailVerification"
+              value={formData.requireEmailVerification}
+              onChange={(value) => handleInputChange('requireEmailVerification', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="Require Email Verification"
+            />
+
+            <CheckboxField
+              name="enableComments"
+              value={formData.enableComments}
+              onChange={(value) => handleInputChange('enableComments', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="Enable Comments"
+            />
+
+            <CheckboxField
+              name="enableRatings"
+              value={formData.enableRatings}
+              onChange={(value) => handleInputChange('enableRatings', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="Enable Ratings"
+            />
+
+            <CheckboxField
+              name="enableNotifications"
+              value={formData.enableNotifications}
+              onChange={(value) => handleInputChange('enableNotifications', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="Enable Notifications"
+            />
+
+            <CheckboxField
+              name="enableAnalytics"
+              value={formData.enableAnalytics}
+              onChange={(value) => handleInputChange('enableAnalytics', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="Enable Analytics"
+            />
+          </div>
+        </div>
+
+        {/* Localization Settings */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Globe className="w-5 h-5 text-orange-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Localization</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <SelectField
+              name="defaultLanguage"
+              value={formData.defaultLanguage}
+              onChange={(value) => handleInputChange('defaultLanguage', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              label="Default Language"
+              options={[
+                { value: 'en', label: 'English' },
+                { value: 'es', label: 'Spanish' },
+                { value: 'fr', label: 'French' },
+                { value: 'de', label: 'German' },
+                { value: 'zh', label: 'Chinese' },
+              ]}
+            />
+
+            <SelectField
+              name="timezone"
+              value={formData.timezone}
+              onChange={(value) => handleInputChange('timezone', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              label="Timezone"
+              options={[
+                { value: 'UTC', label: 'UTC' },
+                { value: 'America/New_York', label: 'Eastern Time' },
+                { value: 'America/Chicago', label: 'Central Time' },
+                { value: 'America/Denver', label: 'Mountain Time' },
+                { value: 'America/Los_Angeles', label: 'Pacific Time' },
+              ]}
+            />
+
+            <SelectField
+              name="currency"
+              value={formData.currency}
+              onChange={(value) => handleInputChange('currency', value)}
+              onBlur={() => {}}
+              error={undefined}
+              required
+              label="Currency"
+              options={[
+                { value: 'USD', label: 'US Dollar ($)' },
+                { value: 'EUR', label: 'Euro (€)' },
+                { value: 'GBP', label: 'British Pound (£)' },
+                { value: 'JPY', label: 'Japanese Yen (¥)' },
+                { value: 'CAD', label: 'Canadian Dollar (C$)' },
+              ]}
+            />
           </div>
         </div>
 
         {/* Email Settings */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Mail className="w-6 h-6 text-green-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">Email Settings</h2>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Mail className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Email Settings</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="adminEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                Admin Email
-              </label>
-              <input
-                type="email"
-                id="adminEmail"
-                name="adminEmail"
-                value={settings.adminEmail}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="supportEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                Support Email
-              </label>
-              <input
-                type="email"
-                id="supportEmail"
-                name="supportEmail"
-                value={settings.supportEmail}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="emailProvider" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Provider
-              </label>
-              <select
-                id="emailProvider"
-                name="emailProvider"
-                value={settings.emailProvider}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="smtp">SMTP</option>
-                <option value="sendgrid">SendGrid</option>
-                <option value="mailgun">Mailgun</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="smtpHost" className="block text-sm font-medium text-gray-700 mb-1">
-                SMTP Host
-              </label>
-              <input
-                type="text"
-                id="smtpHost"
-                name="smtpHost"
-                value={settings.smtpHost}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <SelectField
+              name="emailProvider"
+              value={formData.emailProvider}
+              onChange={(value) => handleInputChange('emailProvider', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="Email Provider"
+              options={[
+                { value: 'smtp', label: 'SMTP' },
+                { value: 'sendgrid', label: 'SendGrid' },
+                { value: 'mailgun', label: 'Mailgun' },
+              ]}
+            />
+
+            <InputField
+              name="smtpHost"
+              value={formData.smtpHost}
+              onChange={(value) => handleInputChange('smtpHost', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="SMTP Host"
+              placeholder="smtp.gmail.com"
+            />
+
+            <InputField
+              name="smtpPort"
+              value={formData.smtpPort}
+              onChange={(value) => handleInputChange('smtpPort', value)}
+              onBlur={() => {}}
+              error={undefined}
+              type="number"
+              label="SMTP Port"
+              placeholder="587"
+            />
+
+            <SelectField
+              name="smtpEncryption"
+              value={formData.smtpEncryption}
+              onChange={(value) => handleInputChange('smtpEncryption', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="SMTP Encryption"
+              options={[
+                { value: 'none', label: 'None' },
+                { value: 'tls', label: 'TLS' },
+                { value: 'ssl', label: 'SSL' },
+              ]}
+            />
+
+            <InputField
+              name="smtpUsername"
+              value={formData.smtpUsername}
+              onChange={(value) => handleInputChange('smtpUsername', value)}
+              onBlur={() => {}}
+              error={undefined}
+              label="SMTP Username"
+              placeholder="your-email@gmail.com"
+            />
+
+            <InputField
+              name="smtpPassword"
+              value={formData.smtpPassword}
+              onChange={(value) => handleInputChange('smtpPassword', value)}
+              onBlur={() => {}}
+              error={undefined}
+              type="password"
+              label="SMTP Password"
+              placeholder="Your email password"
+            />
           </div>
         </div>
 
-        {/* Security Settings */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Shield className="w-6 h-6 text-red-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">Security Settings</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="enableRegistration"
-                name="enableRegistration"
-                checked={settings.enableRegistration}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="enableRegistration" className="ml-2 block text-sm text-gray-700">
-                Enable User Registration
-              </label>
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <SubmitButton
+            loading={loading}
+            disabled={false}
+            loadingText="Saving..."
+            className="w-auto px-8"
+          >
+            <div className="flex items-center gap-2">
+              <Save className="w-4 h-4" />
+              Save Settings
             </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="requireEmailVerification"
-                name="requireEmailVerification"
-                checked={settings.requireEmailVerification}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="requireEmailVerification" className="ml-2 block text-sm text-gray-700">
-                Require Email Verification
-              </label>
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="enableComments"
-                name="enableComments"
-                checked={settings.enableComments}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="enableComments" className="ml-2 block text-sm text-gray-700">
-                Enable Comments
-              </label>
-            </div>
-          </div>
+          </SubmitButton>
         </div>
-
-        {/* Payment Settings */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Database className="w-6 h-6 text-purple-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">Payment Settings</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-1">
-                Default Currency
-              </label>
-              <select
-                id="currency"
-                name="currency"
-                value={settings.currency}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="INR">INR</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="stripePublicKey" className="block text-sm font-medium text-gray-700 mb-1">
-                Stripe Public Key
-              </label>
-              <input
-                type="text"
-                id="stripePublicKey"
-                name="stripePublicKey"
-                value={settings.stripePublicKey}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Analytics Settings */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex items-center mb-4">
-            <Globe className="w-6 h-6 text-indigo-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">Analytics Settings</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="enableAnalytics"
-                name="enableAnalytics"
-                checked={settings.enableAnalytics}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="enableAnalytics" className="ml-2 block text-sm text-gray-700">
-                Enable Analytics
-              </label>
-            </div>
-            
-            <div>
-              <label htmlFor="googleAnalyticsId" className="block text-sm font-medium text-gray-700 mb-1">
-                Google Analytics ID
-              </label>
-              <input
-                type="text"
-                id="googleAnalyticsId"
-                name="googleAnalyticsId"
-                value={settings.googleAnalyticsId}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      </form>
     </div>
   );
 }

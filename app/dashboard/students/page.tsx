@@ -20,7 +20,7 @@ export default function StudentsPage() {
       // Mock data for now - in real implementation, you'd call an API
       const mockStudents: Student[] = [
         {
-          id: 1,
+          id: '1',
           username: 'john_doe',
           email: 'john@example.com',
           first_name: 'John',
@@ -28,11 +28,12 @@ export default function StudentsPage() {
           role: 'student',
           is_active: true,
           created_at: '2024-01-15T10:30:00Z',
+          updated_at: '2024-01-15T10:30:00Z',
           enrolled_courses: 3,
           completed_courses: 1
         },
         {
-          id: 2,
+          id: '2',
           username: 'jane_smith',
           email: 'jane@example.com',
           first_name: 'Jane',
@@ -40,6 +41,7 @@ export default function StudentsPage() {
           role: 'student',
           is_active: true,
           created_at: '2024-01-20T14:15:00Z',
+          updated_at: '2024-01-20T14:15:00Z',
           enrolled_courses: 5,
           completed_courses: 2
         }
@@ -139,10 +141,10 @@ export default function StudentsPage() {
                   <div className="text-sm text-gray-900">
                     <div className="flex items-center">
                       <BookOpen className="w-4 h-4 mr-2 text-green-500" />
-                      {student.enrolled_courses} enrolled
+                      {student.enrolled_courses || 0} enrolled
                     </div>
                     <div className="text-xs text-gray-500">
-                      {student.completed_courses} completed
+                      {student.completed_courses || 0} completed
                     </div>
                   </div>
                 </td>
@@ -198,7 +200,7 @@ export default function StudentsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Active Enrollments</p>
               <p className="text-2xl font-bold text-gray-900">
-                {students.reduce((sum, student) => sum + student.enrolled_courses, 0)}
+                {students.reduce((sum, student) => sum + (student.enrolled_courses || 0), 0)}
               </p>
             </div>
           </div>
@@ -210,7 +212,7 @@ export default function StudentsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Completed Courses</p>
               <p className="text-2xl font-bold text-gray-900">
-                {students.reduce((sum, student) => sum + student.completed_courses, 0)}
+                {students.reduce((sum, student) => sum + (student.completed_courses || 0), 0)}
               </p>
             </div>
           </div>

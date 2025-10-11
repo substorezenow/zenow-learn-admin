@@ -1,11 +1,11 @@
-# Cloudflare Workers configuration for Next.js with next-on-pages
+# Cloudflare Workers configuration for Next.js with @opennextjs/cloudflare
 name = "zenow-learn-admin"
-main = ".vercel/output/static/_worker.js/index.js"
-compatibility_date = "2024-01-01"
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
-directory = ".vercel/output/static"
+directory = ".open-next/assets"
 
 [vars]
 NEXT_PUBLIC_API_BASE_URL = "https://zenow-learn-backend-710009987783.asia-south1.run.app"

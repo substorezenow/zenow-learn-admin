@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-export const runtime = 'edge';
 
 
 export async function GET(req: NextRequest) {
@@ -15,7 +14,7 @@ export async function GET(req: NextRequest) {
     const res = await fetch(`${backendUrl}/api/admin/stats`, {
       headers: { 
         "Content-Type": "application/json",
-        "Cookie": `token=${token}`
+        "Cookie": `token=${token}` // Forward the cookie to backend
       },
     });
 

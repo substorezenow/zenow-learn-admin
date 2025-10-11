@@ -1,13 +1,4 @@
-// Secure API wrapper that validates browser fingerprint
-import { TokenEncryption } from './tokenEncryption';
-
-export class SecureApiWrapper {
-  private encryption: TokenEncryption;
-
-  constructor() {
-    this.encryption = new TokenEncryption();
-  }
-
+class SecureApiWrapper {
   async secureRequest<T = unknown>(
     endpoint: string,
     options: RequestInit = {}
@@ -36,5 +27,4 @@ export class SecureApiWrapper {
   }
 }
 
-// Create singleton instance
 export const secureApiWrapper = new SecureApiWrapper();

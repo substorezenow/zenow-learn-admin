@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-export const runtime = 'edge';
-
-
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -14,24 +11,22 @@ export async function GET(req: NextRequest) {
   
   try {
     const res = await fetch(`${backendUrl}/api/admin/courses`, {
+      method: "GET",
       headers: { 
-        "Content-Type": "application/json",
-        "Cookie": `token=${token}`
+        "Cookie": `token=${token}` // Forward the cookie to backend
       },
     });
 
-    const data = await res.json();
-    
     if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
+      const errorData = await res.json();
+      return NextResponse.json({ error: errorData.error || "Failed to fetch courses" }, { status: res.status });
     }
 
+    const data = await res.json();
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to fetch courses" }, 
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -55,17 +50,15 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-    
     if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
+      const errorData = await res.json();
+      return NextResponse.json({ error: errorData.error || "Failed to create course" }, { status: res.status });
     }
 
+    const data = await res.json();
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to create course" }, 
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("Error creating course:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

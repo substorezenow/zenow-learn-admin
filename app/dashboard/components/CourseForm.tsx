@@ -1,9 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import adminApiService from '../../../src/services/adminApi';
 import { Course, CreateCourseRequest, UpdateCourseRequest, Field } from '../../../src/types';
+import { useFormValidation } from '../../../lib/useFormValidation';
+import { ValidationSchemas } from '../../../src/types';
+import { InputField, TextareaField, CheckboxField, SelectField, SubmitButton } from '../../../lib/formFields';
+import Modal from '../../../src/components/ui/Modal';
 
 interface CourseFormProps {
   course?: Course | null;
@@ -25,76 +29,77 @@ const parseLearningOutcomes = (jsonString: string | null): string => {
   }
 };
 
-const formatLearningOutcomes = (text: string): string | null => {
-  if (!text || text.trim() === '') return null;
+const formatLearningOutcomes = (text: string | string[]): string | null => {
+  if (!text || (Array.isArray(text) && text.length === 0)) return null;
+  if (Array.isArray(text)) {
+    return text.length > 0 ? JSON.stringify(text) : null;
+  }
   const outcomes = text.split('\n').filter(outcome => outcome.trim() !== '');
   return outcomes.length > 0 ? JSON.stringify(outcomes) : null;
 };
 
+const initialData = {
+  title: '',
+  slug: '',
+  description: '',
+  short_description: '',
+  banner_image: '',
+  thumbnail_image: '',
+  duration_hours: 0,
+  difficulty_level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
+  price: 0,
+  is_free: false,
+  is_published: false,
+  field_id: '', // Will be set from available fields
+  instructor_id: '', // Will be set to current user's ID
+  prerequisites: '',
+  learning_outcomes: '',
+  tags: ''
+};
+
 export default function CourseForm({ course, isOpen, onClose, onSuccess }: CourseFormProps) {
-  const [fields, setFields] = useState<Field[]>([]);
-  const [formData, setFormData] = useState<Partial<Course>>({
-    title: '',
-    slug: '',
-    description: '',
-    short_description: '',
-    banner_image: '',
-    thumbnail_image: '',
-    duration_hours: 0,
-    difficulty_level: 'beginner',
-    price: 0,
-    is_free: false,
-    is_published: false,
-    field_id: '1111116658137858049', // Default to "Reading & Writing" field
-    instructor_id: '1',
-    prerequisites: '',
-    learning_outcomes: '',
-    tags: ''
+
+  const {
+    formData,
+    validationState,
+    setFieldValue,
+    setFieldTouched,
+    validateForm,
+    resetForm,
+    clearErrors,
+    getFieldError,
+    isFormValid
+  } = useFormValidation({
+    initialData,
+    validationSchema: ValidationSchemas.validateCourse
   });
+
+  const [fields, setFields] = useState<Field[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (course) {
-      setFormData({
-        title: course.title || '',
-        slug: course.slug || '',
-        description: course.description || '',
-        short_description: course.short_description || '',
-        banner_image: course.banner_image || '',
-        thumbnail_image: course.thumbnail_image || '',
-        duration_hours: course.duration_hours || 0,
-        difficulty_level: (course.difficulty_level || 'beginner').toLowerCase(),
-        price: course.price || 0,
-        is_free: course.is_free ?? false,
-        is_published: course.is_published ?? false,
-        field_id: String(course.field_id) || '1111116658137858049', // Default to "Reading & Writing" field
-        instructor_id: String(course.instructor_id) || '1',
-        prerequisites: course.prerequisites || '',
-        learning_outcomes: parseLearningOutcomes(course.learning_outcomes || null),
-        tags: course.tags || ''
-      });
+      setFieldValue('title', course.title || '');
+      setFieldValue('slug', course.slug || '');
+      setFieldValue('description', course.description || '');
+      setFieldValue('short_description', course.short_description || '');
+      setFieldValue('banner_image', course.banner_image || '');
+      setFieldValue('thumbnail_image', course.thumbnail_image || '');
+      setFieldValue('duration_hours', course.duration_hours || 0);
+      setFieldValue('difficulty_level', (course.difficulty_level || 'beginner').toLowerCase() as 'beginner' | 'intermediate' | 'advanced');
+      setFieldValue('price', course.price || 0);
+      setFieldValue('is_free', course.is_free ?? false);
+      setFieldValue('is_published', course.is_published ?? false);
+      setFieldValue('field_id', String(course.field_id) || ''); // Ensure it's a string
+      setFieldValue('instructor_id', course.instructor_id && course.instructor_id !== 'null' ? course.instructor_id : '');
+      setFieldValue('prerequisites', course.prerequisites || '');
+      setFieldValue('learning_outcomes', parseLearningOutcomes(course.learning_outcomes || null));
+      setFieldValue('tags', course.tags || '');
     } else {
-      setFormData({
-        title: '',
-        slug: '',
-        description: '',
-        short_description: '',
-        banner_image: '',
-        thumbnail_image: '',
-        duration_hours: 0,
-        difficulty_level: 'beginner',
-        price: 0,
-        is_free: false,
-        is_published: false,
-        field_id: '1111116658137858049', // Default to "Reading & Writing" field
-        instructor_id: '1',
-        prerequisites: '',
-        learning_outcomes: '',
-        tags: ''
-      });
+      resetForm();
     }
-  }, [course]);
+  }, [course, setFieldValue, resetForm]);
 
   useEffect(() => {
     const fetchFields = async () => {
@@ -102,34 +107,41 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
         const response = await adminApiService.getFieldsAdmin();
         if (response.success && response.data) {
           setFields(response.data);
+          // Set default field ID if creating new course and no field is selected
+          if (!course && response.data.length > 0 && !formData.field_id) {
+            setFieldValue('field_id', response.data[0].id);
+          }
         }
       } catch (error) {
         console.error('Error fetching fields:', error);
       }
     };
     fetchFields();
-  }, []);
+  }, [course, formData.field_id, setFieldValue]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    
-    if (name === 'title' && !formData.slug) {
+  const handleInputChange = (fieldName: string, value: string | number | boolean | string[]) => {
+    if (fieldName === 'title' && !formData.slug && typeof value === 'string') {
       // Auto-generate slug from title
       const slug = value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      setFormData(prev => ({ ...prev, [name]: value, slug }));
+      setFieldValue('title', value);
+      setFieldValue('slug', slug);
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
-                type === 'number' ? Number(value) : value
-      }));
+      setFieldValue(fieldName, value);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setSubmitError(null);
+    clearErrors();
+
+    // Validate form before submission
+    const validationResult = validateForm();
+    if (!validationResult.isValid) {
+      setLoading(false);
+      return;
+    }
 
     try {
       let response;
@@ -142,16 +154,16 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
         if (formData.title !== course.title) updateData.title = formData.title || '';
         if (formData.slug !== course.slug) updateData.slug = formData.slug || '';
         if (formData.description !== course.description) updateData.description = formData.description || '';
-        if (formData.short_description !== course.short_description) updateData.short_description = formData.short_description || null;
-        if (formData.banner_image !== course.banner_image) updateData.banner_image = formData.banner_image || null;
-        if (formData.thumbnail_image !== course.thumbnail_image) updateData.thumbnail_image = formData.thumbnail_image || null;
+        if (formData.short_description !== course.short_description) updateData.short_description = formData.short_description || '';
+        if (formData.banner_image !== course.banner_image) updateData.banner_image = formData.banner_image || '';
+        if (formData.thumbnail_image !== course.thumbnail_image) updateData.thumbnail_image = formData.thumbnail_image || '';
         if (Number(formData.duration_hours) !== course.duration_hours) updateData.duration_hours = Number(formData.duration_hours) || 0;
         if ((formData.difficulty_level || 'beginner').toLowerCase() !== course.difficulty_level) updateData.difficulty_level = (formData.difficulty_level || 'beginner').toLowerCase() as 'beginner' | 'intermediate' | 'advanced';
         if (Number(formData.price) !== course.price) updateData.price = Number(formData.price) || 0;
         if (formData.is_free !== course.is_free) updateData.is_free = formData.is_free ?? false;
         if (formData.is_published !== course.is_published) updateData.is_published = formData.is_published ?? false;
-        if (String(formData.field_id) !== String(course.field_id)) updateData.field_id = String(formData.field_id) || '1111116658137858049';
-        if (formData.prerequisites !== course.prerequisites) updateData.prerequisites = formData.prerequisites || null;
+        if (formData.field_id !== course.field_id) updateData.field_id = formData.field_id || ''; // Keep as string
+        if (formData.prerequisites !== course.prerequisites) updateData.prerequisites = formData.prerequisites || '';
         
         // Handle learning outcomes comparison
         const currentLearningOutcomes = parseLearningOutcomes(course.learning_outcomes || null);
@@ -161,7 +173,8 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
         
         // Handle tags comparison - only update if actually changed
         if (formData.tags !== course.tags) {
-          updateData.tags = formData.tags && formData.tags.trim() !== '' ? formData.tags : null;
+          const tagsValue = Array.isArray(formData.tags) ? formData.tags.join(',') : formData.tags;
+          updateData.tags = tagsValue && typeof tagsValue === 'string' && tagsValue.trim() !== '' ? tagsValue : '';
         }
         
         response = await adminApiService.updateCourse(course.id, updateData);
@@ -171,19 +184,19 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
           title: formData.title || '',
           slug: formData.slug || '',
           description: formData.description || '',
-          short_description: formData.short_description || null,
-          banner_image: formData.banner_image || null,
-          thumbnail_image: formData.thumbnail_image || null,
+          short_description: formData.short_description || '',
+          banner_image: formData.banner_image || '',
+          thumbnail_image: formData.thumbnail_image || '',
           duration_hours: Number(formData.duration_hours) || 0,
           difficulty_level: (formData.difficulty_level || 'beginner').toLowerCase() as 'beginner' | 'intermediate' | 'advanced',
           price: Number(formData.price) || 0,
           is_free: formData.is_free ?? false,
           is_published: formData.is_published ?? false,
-          field_id: String(formData.field_id) || '1111116658137858049',
-          instructor_id: '1', // Default instructor ID as string
-          prerequisites: formData.prerequisites || null,
+          field_id: String(formData.field_id || ''), // Keep as string to preserve precision
+          instructor_id: formData.instructor_id || '', // Use provided instructor ID or empty string
+          prerequisites: formData.prerequisites || '',
           learning_outcomes: formatLearningOutcomes(formData.learning_outcomes || ''),
-          tags: formData.tags || undefined
+          tags: Array.isArray(formData.tags) ? formData.tags.join(',') : formData.tags || ''
         };
         response = await adminApiService.createCourse(createData);
       }
@@ -192,321 +205,299 @@ export default function CourseForm({ course, isOpen, onClose, onSuccess }: Cours
         onSuccess(response.data);
         onClose();
       } else {
-        setError(response.error || 'Failed to save course');
+        setSubmitError(response.error || 'Failed to save course');
       }
     } catch (err) {
       console.error('Error saving course:', err);
-      setError('Error saving course');
+      setSubmitError('Error saving course');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
-            {course ? 'Edit Course' : 'Create New Course'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={course ? 'Edit Course' : 'Create New Course'}
+      size="xl"
+    >
 
-        {error && (
+        {submitError && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+            {submitError}
+          </div>
+        )}
+
+        {validationState.errors.length > 0 && (
+          <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+            <p className="font-medium">Please fix the following errors:</p>
+            <ul className="mt-1 list-disc list-inside">
+              {validationState.errors.map((error, index) => (
+                <li key={index}>{error.field}: {error.message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Debug info - remove in production */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-4 p-3 bg-gray-100 border border-gray-300 text-gray-700 rounded text-sm">
+            <p className="font-medium">Debug Info:</p>
+            <p>Form Valid: {isFormValid ? 'Yes' : 'No'}</p>
+            <p>Instructor ID: &quot;{formData.instructor_id}&quot;</p>
+            <p>Field ID: &quot;{formData.field_id}&quot;</p>
+            <p>Errors: {validationState.errors.length}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Course Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., React Fundamentals"
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <InputField
+              name="title"
+              value={formData.title}
+              onChange={(value) => handleInputChange('title', value)}
+              onBlur={() => setFieldTouched('title')}
+              error={getFieldError('title')}
+              touched={validationState.touchedFields.has('title')}
+              required
+              label="Course Title"
+              placeholder="e.g., React Fundamentals"
+              helpText="Enter a descriptive title for the course"
+            />
 
-            <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
-                Slug *
-              </label>
-              <input
-                type="text"
-                id="slug"
-                name="slug"
-                value={formData.slug}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., react-fundamentals"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Detailed course description"
+            <InputField
+              name="slug"
+              value={formData.slug}
+              onChange={(value) => handleInputChange('slug', value)}
+              onBlur={() => setFieldTouched('slug')}
+              error={getFieldError('slug')}
+              touched={validationState.touchedFields.has('slug')}
+              required
+              label="Slug"
+              placeholder="e.g., react-fundamentals"
+              helpText="URL-friendly identifier (auto-generated from title)"
             />
           </div>
 
-          <div>
-            <label htmlFor="short_description" className="block text-sm font-medium text-gray-700 mb-1">
-              Short Description
-            </label>
-            <input
-              type="text"
-              id="short_description"
-              name="short_description"
-              value={formData.short_description}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Brief course summary"
+          <TextareaField
+            name="description"
+            value={formData.description}
+            onChange={(value) => handleInputChange('description', value)}
+            onBlur={() => setFieldTouched('description')}
+            error={getFieldError('description')}
+            touched={validationState.touchedFields.has('description')}
+            label="Description"
+            placeholder="Detailed course description"
+            helpText="Optional detailed description (max 5000 characters)"
+            rows={3}
+          />
+
+          <InputField
+            name="short_description"
+            value={formData.short_description}
+            onChange={(value) => handleInputChange('short_description', value)}
+            onBlur={() => setFieldTouched('short_description')}
+            error={getFieldError('short_description')}
+            touched={validationState.touchedFields.has('short_description')}
+            label="Short Description"
+            placeholder="Brief course summary"
+            helpText="Optional brief summary (max 500 characters)"
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <InputField
+              name="banner_image"
+              value={formData.banner_image}
+              onChange={(value) => handleInputChange('banner_image', value)}
+              onBlur={() => setFieldTouched('banner_image')}
+              error={getFieldError('banner_image')}
+              touched={validationState.touchedFields.has('banner_image')}
+              type="url"
+              label="Banner Image URL"
+              placeholder="https://example.com/banner.jpg"
+              helpText="Optional banner image URL"
+            />
+
+            <InputField
+              name="thumbnail_image"
+              value={formData.thumbnail_image}
+              onChange={(value) => handleInputChange('thumbnail_image', value)}
+              onBlur={() => setFieldTouched('thumbnail_image')}
+              error={getFieldError('thumbnail_image')}
+              touched={validationState.touchedFields.has('thumbnail_image')}
+              type="url"
+              label="Thumbnail Image URL"
+              placeholder="https://example.com/thumbnail.jpg"
+              helpText="Optional thumbnail image URL"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="banner_image" className="block text-sm font-medium text-gray-700 mb-1">
-                Banner Image URL
-              </label>
-              <input
-                type="url"
-                id="banner_image"
-                name="banner_image"
-                value={formData.banner_image}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/banner.jpg"
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <InputField
+              name="duration_hours"
+              value={formData.duration_hours}
+              onChange={(value) => handleInputChange('duration_hours', value)}
+              onBlur={() => setFieldTouched('duration_hours')}
+              error={getFieldError('duration_hours')}
+              touched={validationState.touchedFields.has('duration_hours')}
+              type="number"
+              min={0}
+              max={1000}
+              label="Duration (Hours)"
+              placeholder="0"
+              helpText="Course duration in hours"
+            />
 
-            <div>
-              <label htmlFor="thumbnail_image" className="block text-sm font-medium text-gray-700 mb-1">
-                Thumbnail Image URL
-              </label>
-              <input
-                type="url"
-                id="thumbnail_image"
-                name="thumbnail_image"
-                value={formData.thumbnail_image}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/thumbnail.jpg"
-              />
-            </div>
-          </div>
+            <SelectField
+              name="difficulty_level"
+              value={formData.difficulty_level}
+              onChange={(value) => handleInputChange('difficulty_level', value)}
+              onBlur={() => setFieldTouched('difficulty_level')}
+              error={getFieldError('difficulty_level')}
+              touched={validationState.touchedFields.has('difficulty_level')}
+              label="Difficulty Level"
+              placeholder="Select difficulty"
+              helpText="Choose the course difficulty level"
+              options={[
+                { value: 'beginner', label: 'Beginner' },
+                { value: 'intermediate', label: 'Intermediate' },
+                { value: 'advanced', label: 'Advanced' }
+              ]}
+            />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="duration_hours" className="block text-sm font-medium text-gray-700 mb-1">
-                Duration (Hours)
-              </label>
-              <input
-                type="number"
-                id="duration_hours"
-                name="duration_hours"
-                value={formData.duration_hours}
-                onChange={handleInputChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="difficulty_level" className="block text-sm font-medium text-gray-700 mb-1">
-                Difficulty Level
-              </label>
-              <select
-                id="difficulty_level"
-                name="difficulty_level"
-                value={formData.difficulty_level}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                Price ($)
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                min="0"
-                step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="field_id" className="block text-sm font-medium text-gray-700 mb-1">
-                Field
-              </label>
-              <select
-                id="field_id"
-                name="field_id"
-                value={formData.field_id}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a field</option>
-                {fields.map((field) => (
-                  <option key={field.id} value={field.id}>
-                    {field.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="instructor_id" className="block text-sm font-medium text-gray-700 mb-1">
-                Instructor ID
-              </label>
-              <input
-                type="number"
-                id="instructor_id"
-                name="instructor_id"
-                value={formData.instructor_id}
-                onChange={handleInputChange}
-                min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="prerequisites" className="block text-sm font-medium text-gray-700 mb-1">
-              Prerequisites
-            </label>
-            <textarea
-              id="prerequisites"
-              name="prerequisites"
-              value={formData.prerequisites}
-              onChange={handleInputChange}
-              rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="What students should know before taking this course"
+            <InputField
+              name="price"
+              value={formData.price}
+              onChange={(value) => handleInputChange('price', value)}
+              onBlur={() => setFieldTouched('price')}
+              error={getFieldError('price')}
+              touched={validationState.touchedFields.has('price')}
+              type="number"
+              min={0}
+              max={9999.99}
+              step={0.01}
+              label="Price ($)"
+              placeholder="0.00"
+              helpText="Course price in dollars"
             />
           </div>
 
-          <div>
-            <label htmlFor="learning_outcomes" className="block text-sm font-medium text-gray-700 mb-1">
-              Learning Outcomes
-            </label>
-            <textarea
-              id="learning_outcomes"
-              name="learning_outcomes"
-              value={formData.learning_outcomes}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter each learning outcome on a new line:&#10;Learn React fundamentals&#10;Build interactive components&#10;Understand state management"
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SelectField
+              name="field_id"
+              value={formData.field_id}
+              onChange={(value) => handleInputChange('field_id', value)}
+              onBlur={() => setFieldTouched('field_id')}
+              error={getFieldError('field_id')}
+              touched={validationState.touchedFields.has('field_id')}
+              required
+              label="Field"
+              placeholder="Select a field"
+              helpText="Choose the field this course belongs to"
+              options={fields.map(field => ({
+                value: String(field.id), // Ensure value is string to preserve precision
+                label: field.name,
+                disabled: !field.is_active
+              }))}
+            />
+
+            <InputField
+              name="instructor_id"
+              value={formData.instructor_id}
+              onChange={(value) => handleInputChange('instructor_id', value)}
+              onBlur={() => setFieldTouched('instructor_id')}
+              error={getFieldError('instructor_id')}
+              touched={validationState.touchedFields.has('instructor_id')}
+              label="Instructor ID"
+              placeholder="Leave empty for no instructor"
+              helpText="UUID of the course instructor (optional)"
             />
           </div>
 
-          <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
-              Tags
-            </label>
-            <input
-              type="text"
-              id="tags"
-              name="tags"
-              value={formData.tags}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="react,frontend,javascript"
-            />
-          </div>
+          <TextareaField
+            name="prerequisites"
+            value={formData.prerequisites}
+            onChange={(value) => handleInputChange('prerequisites', value)}
+            onBlur={() => setFieldTouched('prerequisites')}
+            error={getFieldError('prerequisites')}
+            touched={validationState.touchedFields.has('prerequisites')}
+            label="Prerequisites"
+            placeholder="What students should know before taking this course"
+            helpText="Optional prerequisites (max 2000 characters)"
+            rows={2}
+          />
+
+          <TextareaField
+            name="learning_outcomes"
+            value={formData.learning_outcomes}
+            onChange={(value) => handleInputChange('learning_outcomes', value)}
+            onBlur={() => setFieldTouched('learning_outcomes')}
+            error={getFieldError('learning_outcomes')}
+            touched={validationState.touchedFields.has('learning_outcomes')}
+            label="Learning Outcomes"
+            placeholder="Enter each learning outcome on a new line:&#10;Learn React fundamentals&#10;Build interactive components&#10;Understand state management"
+            helpText="Enter each learning outcome on a new line"
+            rows={4}
+          />
+
+          <InputField
+            name="tags"
+            value={formData.tags}
+            onChange={(value) => handleInputChange('tags', value)}
+            onBlur={() => setFieldTouched('tags')}
+            error={getFieldError('tags')}
+            touched={validationState.touchedFields.has('tags')}
+            label="Tags"
+            placeholder="react,frontend,javascript"
+            helpText="Comma-separated tags for the course"
+          />
 
           <div className="flex items-center space-x-6">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="is_free"
-                name="is_free"
-                checked={formData.is_free}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="is_free" className="ml-2 block text-sm text-gray-900">
-                Free Course
-              </label>
-            </div>
+            <CheckboxField
+              name="is_free"
+              value={formData.is_free}
+              onChange={(value) => handleInputChange('is_free', value)}
+              onBlur={() => setFieldTouched('is_free')}
+              error={getFieldError('is_free')}
+              touched={validationState.touchedFields.has('is_free')}
+              label="Free Course"
+              helpText="Check if this course is free"
+            />
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="is_published"
-                name="is_published"
-                checked={formData.is_published}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="is_published" className="ml-2 block text-sm text-gray-900">
-                Published
-              </label>
-            </div>
+            <CheckboxField
+              name="is_published"
+              value={formData.is_published}
+              onChange={(value) => handleInputChange('is_published', value)}
+              onBlur={() => setFieldTouched('is_published')}
+              error={getFieldError('is_published')}
+              touched={validationState.touchedFields.has('is_published')}
+              label="Published"
+              helpText="Check to make this course visible to users"
+            />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              disabled={loading}
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            <SubmitButton
+              loading={loading}
+              disabled={!isFormValid}
+              loadingText={course?.id ? 'Updating...' : 'Creating...'}
             >
-              {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              ) : (
+              <div className="flex items-center gap-2">
                 <Save className="w-4 h-4" />
-              )}
-              {loading ? 'Saving...' : (course ? 'Update Course' : 'Create Course')}
-            </button>
+                {course?.id ? 'Update Course' : 'Create Course'}
+              </div>
+            </SubmitButton>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

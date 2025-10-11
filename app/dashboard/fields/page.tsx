@@ -13,8 +13,8 @@ export default function FieldsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
-  const [togglingFieldId, setTogglingFieldId] = useState<number | null>(null);
-  const [deletingFieldId, setDeletingFieldId] = useState<number | null>(null);
+  const [togglingFieldId, setTogglingFieldId] = useState<string | null>(null);
+  const [deletingFieldId, setDeletingFieldId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function FieldsPage() {
     }
   };
 
-  const handleDeleteField = async (id: number) => {
+  const handleDeleteField = async (id: string) => {
     if (!confirm('Are you sure you want to delete this field?')) return;
 
     try {
@@ -60,7 +60,13 @@ export default function FieldsPage() {
       }
     } catch (err) {
       console.error('Error deleting field:', err);
-      setToast({ type: 'error', message: 'Error deleting field' });
+      const errorMessage = err instanceof Error ? err.message : 'Error deleting field';
+      setToast({ type: 'error', message: errorMessage });
+      
+      // If field not found, refresh the data
+      if (errorMessage.includes('not found') || errorMessage.includes('Field not found')) {
+        fetchFields();
+      }
     } finally {
       setDeletingFieldId(null);
     }
@@ -89,7 +95,13 @@ export default function FieldsPage() {
       }
     } catch (err) {
       console.error('Error updating field:', err);
-      setToast({ type: 'error', message: 'Error updating field' });
+      const errorMessage = err instanceof Error ? err.message : 'Error updating field';
+      setToast({ type: 'error', message: errorMessage });
+      
+      // If field not found, refresh the data
+      if (errorMessage.includes('not found') || errorMessage.includes('Field not found')) {
+        fetchFields();
+      }
     } finally {
       setTogglingFieldId(null);
     }
@@ -105,6 +117,13 @@ export default function FieldsPage() {
     }
     setShowCreateModal(false);
     setEditingField(null);
+  };
+
+  const handleFormError = (error: string) => {
+    // If there's an error, refresh the data to ensure we have the latest state
+    if (error.includes('not found') || error.includes('Field not found')) {
+      fetchFields(); // Refresh data
+    }
   };
 
   if (loading) {
@@ -301,6 +320,7 @@ export default function FieldsPage() {
           setEditingField(null);
         }}
         onSuccess={handleFormSuccess}
+        onError={handleFormError}
       />
 
       {/* Toast Notification */}

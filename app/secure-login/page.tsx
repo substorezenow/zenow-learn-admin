@@ -16,8 +16,8 @@ export default function SecureLogin() {
   const tokenStorage = useMemo(() => new SecureTokenStorage(), []);
 
   useEffect(() => {
-    // Generate and display browser fingerprint
-    const fp = tokenStorage['encryption'].getCurrentSessionId();
+    // Generate fresh fingerprint (never stored)
+    const fp = tokenStorage.generateFingerprint();
     setFingerprint(fp);
   }, [tokenStorage]);
 
@@ -46,17 +46,12 @@ export default function SecureLogin() {
         throw new Error(errorData.error || "Login failed");
       }
 
-      const data = await response.json();
+      await response.json();
       
-      // Store token with browser fingerprint encryption
-      const success = await tokenStorage.storeToken(data.token);
+      // Clear any old localStorage data for security
+      tokenStorage.clearSession();
       
-      if (success) {
-        console.log("🔐 Token encrypted and stored with browser fingerprint");
-        router.push("/dashboard");
-      } else {
-        throw new Error("Failed to store encrypted token");
-      }
+      router.push("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Login failed");

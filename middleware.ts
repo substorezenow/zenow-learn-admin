@@ -1,102 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-const AUTH_PATHS = ["/login", "/forgot-password"];
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get("token")?.value;
+  const { pathname } = request.nextUrl;
 
-const middleware = async (req: NextRequest) => {
-  const token = req.cookies.get("token")?.value;
-  // Debug: log route and token value
-  console.log("[MIDDLEWARE] Path:", req.nextUrl.pathname);
-  console.log("[MIDDLEWARE] token cookie:", token);
+  // Public routes that don't require authentication
+  const publicRoutes = ['/login', '/forgot-password', '/api/auth/login', '/api/auth/secure-login'];
   
-  // Redirect /admin to /dashboard
-  if (req.nextUrl.pathname.startsWith("/admin")) {
-    const newPath = req.nextUrl.pathname.replace("/admin", "/dashboard");
-    console.log("[MIDDLEWARE] Redirecting /admin to /dashboard:", newPath);
-    return NextResponse.redirect(new URL(newPath, req.url));
-  }
-  
-  
-  const isAuthPage = AUTH_PATHS.some((p) => req.nextUrl.pathname.startsWith(p));
-
-  // If token exists, do basic validation
-  if (token) {
-    // Use env var for backend URL, fallback to localhost
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-    let valid = false;
-    try {
-      const res = await fetch(`${backendUrl}/api/auth/validate-token`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      let data = null;
-      if (res.ok) {
-        data = await res.json();
-        valid = data.valid;
-      }
-    } catch (error) {
-      console.log("[MIDDLEWARE] Token validation error:", error);
-      valid = false;
-    }
-    
-    // Fallback: Basic JWT token validation (check if it has the right structure)
-    if (!valid) {
-      const tokenParts = token.split('.');
-      valid = tokenParts.length === 3; // JWT has 3 parts
-      
-      if (valid) {
-        try {
-          // Try to decode the JWT payload to check if it's valid
-          const payload = JSON.parse(atob(tokenParts[1]));
-          valid = payload && payload.exp && payload.exp > Date.now() / 1000;
-          console.log("[MIDDLEWARE] Token validation:", valid, "expires:", new Date(payload.exp * 1000));
-        } catch (e) {
-          valid = false;
-          console.log("[MIDDLEWARE] Token decode error:", e);
-        }
-      }
-    }
-    
-    console.log(
-      "[MIDDLEWARE] isAuthPage:",
-      isAuthPage,
-      "| token valid:",
-      valid
-    );
-    if (isAuthPage && valid) {
-      // Already logged in, redirect to dashboard
-      console.log(
-        "[MIDDLEWARE] Redirecting authenticated user from auth page to /dashboard"
-      );
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-    if (!isAuthPage && !valid) {
-      // Invalid token, redirect to login
-      console.log(
-        "[MIDDLEWARE] Invalid or missing token, redirecting to /login"
-      );
-      const resp = NextResponse.redirect(new URL("/login", req.url));
-      resp.cookies.delete("token");
-      return resp;
-    }
-    // Valid token, allow
-    console.log("[MIDDLEWARE] Valid token, allowing request");
+  if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
-  // No token
-  if (!isAuthPage) {
-    // Not logged in, redirect to login
-    console.log(
-      "[MIDDLEWARE] No token and not on auth page, redirecting to /login"
-    );
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-  // On login/forgot-password, allow
-  console.log("[MIDDLEWARE] On auth page without token, allowing request");
-  return NextResponse.next();
-};
 
-export default middleware;
+  // Check if user is trying to access protected routes
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/api/admin')) {
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/dashboard", "/admin", "/login", "/forgot-password", "/dashboard/:path*", "/admin/:path*"],
+  matcher: [
+    '/dashboard/:path*',
+    '/api/admin/:path*',
+    '/login',
+    '/forgot-password'
+  ]
 };

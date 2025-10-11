@@ -1,5 +1,4 @@
 // Force Node.js runtime for proper cookie handling
-export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 
 

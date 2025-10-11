@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-export const runtime = 'edge';
 
 
 export async function PUT(
@@ -20,8 +19,8 @@ export async function PUT(
     const res = await fetch(`${backendUrl}/api/admin/fields/${id}`, {
       method: "PUT",
       headers: { 
-        "Cookie": `token=${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}` // Forward the cookie to backend
       },
       body: JSON.stringify(body),
     });
@@ -58,8 +57,8 @@ export async function DELETE(
     const res = await fetch(`${backendUrl}/api/admin/fields/${id}`, {
       method: "DELETE",
       headers: { 
-        "Cookie": `token=${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `token=${token}` // Forward the cookie to backend
       },
     });
 

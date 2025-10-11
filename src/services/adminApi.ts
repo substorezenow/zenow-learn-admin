@@ -1,10 +1,11 @@
-// Secure Admin API Service with Cookie-based Authentication
-import {
+import { secureApiWrapper } from "../../lib/secureApiWrapper";
+import type {
   ApiResponse,
-  AdminStats,
   Category,
   Field,
   Course,
+  CourseModule,
+  AdminStats,
   CreateCategoryRequest,
   UpdateCategoryRequest,
   CreateFieldRequest,
@@ -12,14 +13,12 @@ import {
   CreateCourseRequest,
   UpdateCourseRequest,
   CreateModuleRequest,
-  UpdateModuleRequest,
-} from "../types";
+  UpdateModuleRequest
+} from '../types';
 
-// Use Next.js API routes for security
-const API_BASE_URL = "/api";
-
+// Request options interface (only interface needed in this file)
 interface RequestOptions {
-  method?: string;
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   headers?: Record<string, string>;
   body?: string | FormData;
 }
@@ -28,7 +27,7 @@ class AdminApiService {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = API_BASE_URL;
+    this.baseURL = "/api";
   }
 
   async request<T = unknown>(
@@ -36,7 +35,6 @@ class AdminApiService {
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
-
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",
@@ -44,231 +42,245 @@ class AdminApiService {
       },
       ...options,
     };
-
-    // Make request with cookie-based authentication
-    const response = await fetch(url, {
-      ...config,
-      credentials: 'include', // Include httpOnly cookies
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Token expired or invalid, redirect to login
-        window.location.href = '/login';
-        throw new Error('Session expired');
-      }
-      if (response.status === 403) {
-        // Access denied, redirect to login
-        window.location.href = '/login';
-        throw new Error('Access denied');
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
+    
+    return secureApiWrapper.secureRequest<ApiResponse<T>>(url, config);
   }
 
-  // Clear session on logout
-  public clearSession(): void {
-    // Clear session cookie by calling logout API
-    fetch('/api/auth/logout', { 
-      method: 'POST',
-      credentials: 'include'
+  // Auth methods
+  async login(username: string, password: string, fingerprint: string): Promise<ApiResponse> {
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
+    formData.append("fingerprint", fingerprint);
+    
+    return secureApiWrapper.secureRequest("/api/auth/secure-login", {
+      method: "POST",
+      body: formData,
     });
   }
 
+  async logout(): Promise<void> {
+    await this.request("/auth/logout", { method: "POST" });
+  }
 
-  // ==================== ADMIN STATISTICS ====================
+  // Admin methods
   async getAdminStats(): Promise<ApiResponse<AdminStats>> {
-    return this.request<AdminStats>("/admin/stats");
+    return this.request("/admin/stats");
   }
 
-  // ==================== CATEGORIES ADMIN CRUD ====================
+  async getCategories(): Promise<ApiResponse> {
+    return this.request("/admin/categories");
+  }
+
   async getCategoriesAdmin(): Promise<ApiResponse<Category[]>> {
     return this.request<Category[]>("/admin/categories");
   }
 
-  async createCategory(
-    categoryData: CreateCategoryRequest
-  ): Promise<ApiResponse<Category>> {
+  async createCategory(data: CreateCategoryRequest): Promise<ApiResponse<Category>> {
     return this.request<Category>("/admin/categories", {
       method: "POST",
-      body: JSON.stringify(categoryData),
+      body: JSON.stringify(data),
     });
   }
 
-  async updateCategory(
-    id: number,
-    categoryData: UpdateCategoryRequest
-  ): Promise<ApiResponse<Category>> {
-    return this.request<Category>(`/admin/categories/${id}`, {
+  async updateCategory(id: string | number, data: UpdateCategoryRequest): Promise<ApiResponse<Category>> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid category ID');
+    }
+    
+    return this.request(`/admin/categories/${stringId}`, {
       method: "PUT",
-      body: JSON.stringify(categoryData),
+      body: JSON.stringify(data),
     });
   }
 
-  async deleteCategory(id: number): Promise<ApiResponse<Category>> {
-    return this.request<Category>(`/admin/categories/${id}`, {
+  async deleteCategory(id: string | number): Promise<ApiResponse> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid category ID');
+    }
+    
+    return this.request(`/admin/categories/${stringId}`, {
       method: "DELETE",
     });
   }
 
-  // ==================== FIELDS ADMIN CRUD ====================
+  // Fields methods
+  async getFields(): Promise<ApiResponse> {
+    return this.request("/admin/fields");
+  }
+
   async getFieldsAdmin(): Promise<ApiResponse<Field[]>> {
-    return this.request<Field[]>("/admin/fields");
+    return this.request("/admin/fields");
   }
 
-  async createField(
-    fieldData: CreateFieldRequest
-  ): Promise<ApiResponse<Field>> {
-    return this.request<Field>("/admin/fields", {
+  async createField(data: CreateFieldRequest): Promise<ApiResponse<Field>> {
+    return this.request("/admin/fields", {
       method: "POST",
-      body: JSON.stringify(fieldData),
+      body: JSON.stringify(data),
     });
   }
 
-  async updateField(
-    id: number,
-    fieldData: UpdateFieldRequest
-  ): Promise<ApiResponse<Field>> {
-    return this.request<Field>(`/admin/fields/${id}`, {
+  async updateField(id: string | number, data: UpdateFieldRequest): Promise<ApiResponse<Field>> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid field ID');
+    }
+    
+    return this.request(`/admin/fields/${stringId}`, {
       method: "PUT",
-      body: JSON.stringify(fieldData),
+      body: JSON.stringify(data),
     });
   }
 
-  async deleteField(id: number): Promise<ApiResponse<Field>> {
-    return this.request<Field>(`/admin/fields/${id}`, {
+  async deleteField(id: string | number): Promise<ApiResponse> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid field ID');
+    }
+    
+    return this.request(`/admin/fields/${stringId}`, {
       method: "DELETE",
     });
   }
 
-  // ==================== COURSES ADMIN CRUD ====================
+  // Courses methods
+  async getCourses(): Promise<ApiResponse> {
+    return this.request("/admin/courses");
+  }
+
   async getCoursesAdmin(): Promise<ApiResponse<Course[]>> {
-    return this.request<Course[]>("/admin/courses");
+    return this.request("/admin/courses");
   }
 
-  async createCourse(
-    courseData: CreateCourseRequest
-  ): Promise<ApiResponse<Course>> {
-    return this.request<Course>("/admin/courses", {
+  async createCourse(data: CreateCourseRequest): Promise<ApiResponse<Course>> {
+    return this.request("/admin/courses", {
       method: "POST",
-      body: JSON.stringify(courseData),
+      body: JSON.stringify(data),
     });
   }
 
-  async updateCourse(
-    id: number,
-    courseData: UpdateCourseRequest
-  ): Promise<ApiResponse<Course>> {
-    return this.request<Course>(`/admin/courses/${id}`, {
+  async updateCourse(id: string | number, data: UpdateCourseRequest): Promise<ApiResponse<Course>> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid course ID');
+    }
+    
+    return this.request(`/admin/courses/${stringId}`, {
       method: "PUT",
-      body: JSON.stringify(courseData),
+      body: JSON.stringify(data),
     });
   }
 
-  async deleteCourse(id: number): Promise<ApiResponse<Course>> {
-    return this.request<Course>(`/admin/courses/${id}`, {
+  async deleteCourse(id: string | number): Promise<ApiResponse> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid course ID');
+    }
+    
+    return this.request(`/admin/courses/${stringId}`, {
       method: "DELETE",
     });
   }
 
-  // ==================== COURSE MODULES ADMIN CRUD ====================
-  async createCourseModule(
-    courseId: number,
-    moduleData: CreateModuleRequest
-  ): Promise<ApiResponse<unknown>> {
-    return this.request(`/admin/courses/${courseId}/modules`, {
+  // Security dashboard
+  async getSecurityDashboard(): Promise<ApiResponse> {
+    return this.request("/admin/security-dashboard");
+  }
+
+  // Migration management
+  async getMigrationStatus(): Promise<ApiResponse> {
+    return this.request("/admin/migrations");
+  }
+
+  async runMigrations(): Promise<ApiResponse> {
+    return this.request("/admin/migrations", {
       method: "POST",
-      body: JSON.stringify(moduleData),
     });
   }
 
-  async updateCourseModule(
-    moduleId: number,
-    moduleData: UpdateModuleRequest
-  ): Promise<ApiResponse<unknown>> {
-    return this.request(`/admin/modules/${moduleId}`, {
-      method: "PUT",
-      body: JSON.stringify(moduleData),
+  async rollbackMigration(): Promise<ApiResponse> {
+    return this.request("/admin/migrations/rollback", {
+      method: "POST",
     });
   }
 
-  async deleteCourseModule(moduleId: number): Promise<ApiResponse<unknown>> {
-    return this.request(`/admin/modules/${moduleId}`, {
-      method: "DELETE",
-    });
-  }
-
-  // ==================== HELPER METHODS ====================
-
-  // Get all categories for dropdowns
-  async getCategoriesForDropdown(): Promise<
-    Array<{ value: number; label: string; slug: string }>
-  > {
-    const response = await this.getCategoriesAdmin();
-    if (response.success && response.data) {
-      return response.data.map((category) => ({
-        value: category.id,
-        label: category.name,
-        slug: category.slug,
-      }));
-    }
-    return [];
-  }
-
-  // Get all fields for dropdowns
-  async getFieldsForDropdown(): Promise<
-    Array<{ value: number; label: string; slug: string; category_id: number }>
-  > {
-    const response = await this.getFieldsAdmin();
-    if (response.success && response.data) {
-      return response.data.map((field) => ({
-        value: field.id,
-        label: field.name,
-        slug: field.slug,
-        category_id: field.id,
-      }));
-    }
-    return [];
-  }
-
-  // Get fields by category for dropdowns
-  async getFieldsByCategoryForDropdown(
-    categoryId: number
-  ): Promise<Array<{ value: number; label: string; slug: string }>> {
-    const response = await this.getFieldsAdmin();
-    if (response.success && response.data) {
-      return response.data
-        .filter((field) => field.id === categoryId)
-        .map((field) => ({
-          value: field.id,
-          label: field.name,
-          slug: field.slug,
-        }));
-    }
-    return [];
-  }
-
-  // Upload file (placeholder for future implementation)
-  async uploadFile(
-    file: File,
-    type: string = "image"
-  ): Promise<ApiResponse<unknown>> {
+  // File upload
+  async uploadFile(file: File): Promise<ApiResponse> {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", type);
-
+    formData.append('file', file);
+    
     return this.request("/admin/upload", {
       method: "POST",
-      headers: {
-        // Don't set Content-Type, let browser set it with boundary
-      },
       body: formData,
     });
   }
+
+  // Course modules
+  async getCourseModules(courseId: string): Promise<ApiResponse<CourseModule[]>> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(courseId);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid course ID');
+    }
+    
+    return this.request<CourseModule[]>(`/admin/course-modules?courseId=${stringId}`);
+  }
+
+  async createCourseModule(courseId: string, data: CreateModuleRequest): Promise<ApiResponse<CourseModule>> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(courseId);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid course ID');
+    }
+    
+    return this.request<CourseModule>(`/admin/course-modules?courseId=${stringId}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateModule(moduleId: string | number, data: UpdateModuleRequest): Promise<ApiResponse> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(moduleId);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid module ID');
+    }
+    
+    return this.request(`/admin/modules/${stringId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteModule(moduleId: string | number): Promise<ApiResponse> {
+    // Keep ID as string to preserve precision for large integers
+    const stringId = String(moduleId);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid module ID');
+    }
+    
+    return this.request(`/admin/modules/${stringId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Alias for deleteModule (used by modules page)
+  async deleteCourseModule(moduleId: string | number): Promise<ApiResponse> {
+    return this.deleteModule(moduleId);
+  }
+
+  public clearSession(): void {
+    fetch('/api/auth/logout', { method: 'POST' });
+  }
 }
 
-// Create and export a singleton instance
 const adminApiService = new AdminApiService();
 export default adminApiService;

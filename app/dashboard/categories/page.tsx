@@ -13,8 +13,8 @@ export default function CategoriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [deletingCategoryId, setDeletingCategoryId] = useState<number | null>(null);
-  const [togglingCategoryId, setTogglingCategoryId] = useState<number | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
+  const [togglingCategoryId, setTogglingCategoryId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function CategoriesPage() {
     }
   }, [toast]);
 
-  const fetchCategories = async () => {
+    const fetchCategories = async () => {
     try {
       setLoading(true);
       setError(null); // Clear any previous errors
@@ -46,7 +46,7 @@ export default function CategoriesPage() {
     }
   };
 
-  const handleDeleteCategory = async (id: number) => {
+  const handleDeleteCategory = async (id: string) => {
     if (!confirm('Are you sure you want to delete this category?')) return;
 
     setDeletingCategoryId(id);
@@ -60,7 +60,13 @@ export default function CategoriesPage() {
       }
     } catch (err) {
       console.error('Error deleting category:', err);
-      setToast({ message: 'Error deleting category', type: 'error' });
+      const errorMessage = err instanceof Error ? err.message : 'Error deleting category';
+      setToast({ message: errorMessage, type: 'error' });
+      
+      // If category not found, refresh the data
+      if (errorMessage.includes('not found') || errorMessage.includes('Category not found')) {
+        fetchCategories();
+      }
     } finally {
       setDeletingCategoryId(null);
     }
@@ -89,7 +95,13 @@ export default function CategoriesPage() {
       }
     } catch (err) {
       console.error('Error updating category:', err);
-      setToast({ message: 'Error updating category', type: 'error' });
+      const errorMessage = err instanceof Error ? err.message : 'Error updating category';
+      setToast({ message: errorMessage, type: 'error' });
+      
+      // If category not found, refresh the data
+      if (errorMessage.includes('not found') || errorMessage.includes('Category not found')) {
+        fetchCategories();
+      }
     } finally {
       setTogglingCategoryId(null);
     }
@@ -107,6 +119,13 @@ export default function CategoriesPage() {
     }
     setShowCreateModal(false);
     setEditingCategory(null);
+  };
+
+  const handleFormError = (error: string) => {
+    // If there's an error, refresh the data to ensure we have the latest state
+    if (error.includes('not found') || error.includes('Category not found')) {
+      fetchCategories(); // Refresh data
+    }
   };
 
   if (loading) {
@@ -287,15 +306,16 @@ export default function CategoriesPage() {
       )}
 
       {/* Category Form Modal */}
-      <CategoryForm
-        category={editingCategory}
-        isOpen={showCreateModal || editingCategory !== null}
-        onClose={() => {
-          setShowCreateModal(false);
-          setEditingCategory(null);
-        }}
-        onSuccess={handleFormSuccess}
-      />
+        <CategoryForm
+          category={editingCategory}
+          isOpen={showCreateModal || editingCategory !== null}
+          onClose={() => {
+            setShowCreateModal(false);
+            setEditingCategory(null);
+          }}
+          onSuccess={handleFormSuccess}
+          onError={handleFormError}
+        />
 
       {/* Toast Notification */}
       {toast && (

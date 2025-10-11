@@ -23,13 +23,15 @@ export default function BlogsPage() {
       // Mock data for now - in real implementation, you'd call an API
       const mockBlogs: Blog[] = [
         {
-          id: 1,
+          id: '1',
           title: 'Getting Started with React Development',
           slug: 'getting-started-react-development',
           excerpt: 'Learn the fundamentals of React and start building modern web applications.',
           content: 'Full blog content here...',
+          author_id: 'admin-1',
           author: 'Admin User',
           featured_image: 'https://example.com/react-blog.jpg',
+          status: 'published',
           is_published: true,
           published_at: '2024-01-15T10:30:00Z',
           created_at: '2024-01-15T10:30:00Z',
@@ -38,13 +40,15 @@ export default function BlogsPage() {
           likes: 45
         },
         {
-          id: 2,
+          id: '2',
           title: 'Advanced Node.js Patterns',
           slug: 'advanced-nodejs-patterns',
           excerpt: 'Explore advanced patterns and best practices in Node.js development.',
           content: 'Full blog content here...',
+          author_id: 'admin-1',
           author: 'Admin User',
           featured_image: 'https://example.com/nodejs-blog.jpg',
+          status: 'draft',
           is_published: false,
           created_at: '2024-01-20T14:15:00Z',
           updated_at: '2024-01-20T14:15:00Z',
@@ -80,7 +84,7 @@ export default function BlogsPage() {
     }
   };
 
-  const handleDeleteBlog = async (id: number) => {
+  const handleDeleteBlog = async (id: string) => {
     if (!confirm('Are you sure you want to delete this blog post?')) return;
 
     try {
@@ -205,7 +209,7 @@ export default function BlogsPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div className="text-xs">
-                    <div>{blog.views} views</div>
+                    <div>{blog.views || 0} views</div>
                     <div>{blog.likes} likes</div>
                   </div>
                 </td>
@@ -290,29 +294,44 @@ export default function BlogsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Views</p>
               <p className="text-2xl font-bold text-gray-900">
-                {blogs.reduce((sum, blog) => sum + blog.views, 0)}
+                {blogs.reduce((sum, blog) => sum + (blog.views || 0), 0)}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Create/Edit Modal would go here */}
+      {/* Create/Edit Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create New Blog Post</h2>
-            {/* Form would go here */}
-            <div className="flex justify-end gap-2 mt-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div 
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 bg-white border-b border-gray-200 rounded-t-xl px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">Create New Blog Post</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
-                Cancel
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Create
-              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {/* Form would go here */}
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                  Create
+                </button>
+              </div>
             </div>
           </div>
         </div>

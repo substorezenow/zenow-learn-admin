@@ -1,0 +1,213 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "unsafe-none"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        }
+      ],
+      "regex": "^(?:/(.*))(?:/)?$"
+    }
+  ],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/admin/categories/[id]",
+      "regex": "^/api/admin/categories/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/categories/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/courses/[id]",
+      "regex": "^/api/admin/courses/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/courses/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/fields/[id]",
+      "regex": "^/api/admin/fields/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/fields/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/dashboard",
+      "regex": "^/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard(?:/)?$"
+    },
+    {
+      "page": "/dashboard/blogs",
+      "regex": "^/dashboard/blogs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/blogs(?:/)?$"
+    },
+    {
+      "page": "/dashboard/categories",
+      "regex": "^/dashboard/categories(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/categories(?:/)?$"
+    },
+    {
+      "page": "/dashboard/courses",
+      "regex": "^/dashboard/courses(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/courses(?:/)?$"
+    },
+    {
+      "page": "/dashboard/debug",
+      "regex": "^/dashboard/debug(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/debug(?:/)?$"
+    },
+    {
+      "page": "/dashboard/fields",
+      "regex": "^/dashboard/fields(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/fields(?:/)?$"
+    },
+    {
+      "page": "/dashboard/modules",
+      "regex": "^/dashboard/modules(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/modules(?:/)?$"
+    },
+    {
+      "page": "/dashboard/profile",
+      "regex": "^/dashboard/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/profile(?:/)?$"
+    },
+    {
+      "page": "/dashboard/security",
+      "regex": "^/dashboard/security(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/security(?:/)?$"
+    },
+    {
+      "page": "/dashboard/settings",
+      "regex": "^/dashboard/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/settings(?:/)?$"
+    },
+    {
+      "page": "/dashboard/students",
+      "regex": "^/dashboard/students(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/students(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/forgot-password",
+      "regex": "^/forgot\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/forgot\\-password(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/secure-login",
+      "regex": "^/secure\\-login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/secure\\-login(?:/)?$"
+    },
+    {
+      "page": "/test-secure",
+      "regex": "^/test\\-secure(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test\\-secure(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

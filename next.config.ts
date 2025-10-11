@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'images.unsplash.com',
         port: '',
         pathname: '/**',
@@ -44,6 +50,9 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       }
     ],
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   // Enhanced security headers
   async headers() {
@@ -73,7 +82,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'unsafe-none',
+            value: 'require-corp',
           },
           {
             key: 'Cross-Origin-Opener-Policy',
@@ -81,7 +90,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Cross-Origin-Resource-Policy',
-            value: 'cross-origin',
+            value: 'same-origin',
           },
           {
             key: 'Strict-Transport-Security',
@@ -89,7 +98,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
           },
         ],
       },

@@ -4,14 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Play, FileText, Video, Loader2 } from 'lucide-react';
 import adminApiService from '../../../src/services/adminApi';
 import { CourseModule, Course } from '../../../src/types';
+import ModuleForm from '../components/ModuleForm';
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<CourseModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [, setEditingModule] = useState<CourseModule | null>(null);
-  const [deletingModuleId, setDeletingModuleId] = useState<number | null>(null);
+  const [editingModule, setEditingModule] = useState<CourseModule | null>(null);
+  const [deletingModuleId, setDeletingModuleId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
@@ -57,7 +58,21 @@ export default function ModulesPage() {
     }
   };
 
-  const handleDeleteModule = async (id: number) => {
+  const handleModuleSuccess = (module: CourseModule) => {
+    if (editingModule) {
+      // Update existing module
+      setModules(modules.map(m => m.id === module.id ? module : m));
+      setToast({ type: 'success', message: 'Module updated successfully' });
+    } else {
+      // Add new module
+      setModules([...modules, module]);
+      setToast({ type: 'success', message: 'Module created successfully' });
+    }
+    setEditingModule(null);
+    setShowCreateModal(false);
+  };
+
+  const handleDeleteModule = async (id: string) => {
     if (!confirm('Are you sure you want to delete this module?')) return;
 
     try {
@@ -158,7 +173,7 @@ export default function ModulesPage() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
-                      {getModuleIcon(module.module_type)}
+                      {getModuleIcon(module.module_type || 'video')}
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">{module.title}</div>
@@ -228,26 +243,16 @@ export default function ModulesPage() {
         </div>
       )}
 
-      {/* Create/Edit Modal would go here */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create New Module</h2>
-            {/* Form would go here */}
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Module Form Modal */}
+      <ModuleForm
+        module={editingModule}
+        isOpen={showCreateModal || !!editingModule}
+        onClose={() => {
+          setShowCreateModal(false);
+          setEditingModule(null);
+        }}
+        onSuccess={handleModuleSuccess}
+      />
 
       {/* Toast Notification */}
       {toast && (

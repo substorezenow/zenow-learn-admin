@@ -76,10 +76,4 @@ export const adminSidebarRoutes = [
     icon: <SettingsIcon className="w-5 h-5" />,
     description: "System configuration"
   },
-  {
-    route: "/dashboard/debug",
-    name: "Debug API",
-    icon: <SettingsIcon className="w-5 h-5" />,
-    description: "Test API connectivity"
-  },
 ];

@@ -22,8 +22,8 @@ export default function CoursesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
-  const [togglingCourseId, setTogglingCourseId] = useState<number | null>(null);
-  const [deletingCourseId, setDeletingCourseId] = useState<number | null>(null);
+  const [togglingCourseId, setTogglingCourseId] = useState<string | null>(null);
+  const [deletingCourseId, setDeletingCourseId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -58,7 +58,7 @@ export default function CoursesPage() {
     }
   };
 
-  const handleDeleteCourse = async (id: number) => {
+  const handleDeleteCourse = async (id: string) => {
     if (!confirm("Are you sure you want to delete this course?")) return;
 
     setDeletingCourseId(id);
