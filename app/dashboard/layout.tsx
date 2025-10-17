@@ -5,15 +5,10 @@ import {
   Menu, 
   X, 
   LogOut, 
-  Bell, 
-  Search, 
   Settings, 
   User, 
   ChevronDown,
-  Sparkles,
-  Home,
-  Shield,
-  BarChart3
+  Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -48,12 +43,12 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-4">
+      <header className="flex-shrink-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-3 sm:px-6 py-3">
           {/* Left side */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
               onClick={toggleSidebar}
@@ -62,47 +57,32 @@ export default function DashboardLayout({
               <Menu className="w-5 h-5 text-gray-600" />
             </button>
             
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Sparkles className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Zenow Academy</h1>
-                <p className="text-sm text-gray-500">Admin Dashboard</p>
+              <div className="hidden sm:block">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900">Zenow Academy</h1>
+                <p className="text-xs sm:text-sm text-gray-500">Admin Dashboard</p>
               </div>
-            </div>
-          </div>
-
-          {/* Center - Search */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search courses, users, or settings..."
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
+              <div className="sm:hidden">
+                <h1 className="text-sm font-bold text-gray-900">Zenow</h1>
+              </div>
             </div>
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
-            {/* Notifications */}
-            <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
-              <Bell className="w-5 h-5 text-gray-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* User Menu */}
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-1 sm:gap-2 p-2 rounded-xl hover:bg-gray-100 transition-colors"
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                 </div>
-                <ChevronDown className="w-4 h-4 text-gray-600" />
+                <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 hidden sm:block" />
               </button>
 
               <AnimatePresence>
@@ -111,23 +91,23 @@ export default function DashboardLayout({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2"
+                    className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2"
                   >
-                    <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50">
+                    <Link href="/dashboard/profile" className="flex items-center gap-3 px-3 sm:px-4 py-2 hover:bg-gray-50">
                       <User className="w-4 h-4 text-gray-600" />
-                      <span>Profile</span>
+                      <span className="text-sm">Profile</span>
                     </Link>
-                    <Link href="/dashboard/settings" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50">
+                    <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 sm:px-4 py-2 hover:bg-gray-50">
                       <Settings className="w-4 h-4 text-gray-600" />
-                      <span>Settings</span>
+                      <span className="text-sm">Settings</span>
                     </Link>
                     <div className="border-t border-gray-200 my-1"></div>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 w-full"
+                      className="flex items-center gap-3 px-3 sm:px-4 py-2 text-red-600 hover:bg-red-50 w-full"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>Logout</span>
+                      <span className="text-sm">Logout</span>
                     </button>
                   </motion.div>
                 )}
@@ -137,21 +117,27 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <div className="flex">
+      {/* Main Layout Container */}
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <AnimatePresence>
           {(sidebarOpen || isDesktop) && (
             <motion.aside
-              initial={{ x: -280, opacity: 0 }}
+              initial={{ x: -224, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -280, opacity: 0 }}
+              exit={{ x: -224, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed lg:static z-30 top-0 left-0 h-full w-72 bg-white border-r border-gray-200 shadow-xl lg:shadow-none flex flex-col"
+              className="fixed lg:static z-50 top-0 left-0 h-full w-56 sm:w-64 lg:w-64 bg-white border-r border-gray-200 shadow-xl lg:shadow-none flex flex-col min-h-full"
             >
               {/* Sidebar Header */}
-              <div className="p-6 border-b border-gray-200/50">
+              <div className="flex-shrink-0 p-3 sm:p-4 border-b border-gray-200/50">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">Navigation</h2>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                    </div>
+                    <span className="font-semibold text-gray-900 text-sm sm:text-base">Admin</span>
+                  </div>
                   <button
                     className="lg:hidden p-1 rounded-lg hover:bg-gray-100"
                     onClick={toggleSidebar}
@@ -162,132 +148,46 @@ export default function DashboardLayout({
                 </div>
               </div>
 
-              {/* Navigation */}
-              <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                {/* Dashboard Overview */}
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <Home className="w-4 h-4" />
-                    Overview
-                  </div>
+              {/* Navigation - Scrollable */}
+              <nav className="flex-1 px-3 sm:px-4 py-3 sm:py-4 space-y-1 overflow-y-auto min-h-0">
+                {adminSidebarRoutes.map((item) => (
                   <Link
-                    href="/dashboard"
-                    className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all ${
-                      pathname === "/dashboard"
+                    key={item.route}
+                    href={item.route}
+                    className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-3 rounded-xl font-medium transition-all group text-sm sm:text-base ${
+                      pathname === item.route
                         ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
                         : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    <BarChart3 className="w-5 h-5" />
-                    <span>Dashboard</span>
+                    <div className={`transition-colors ${
+                      pathname === item.route ? "text-blue-600" : "text-gray-500 group-hover:text-gray-700"
+                    }`}>
+                      {item.icon}
+                    </div>
+                    <span className="truncate">{item.name}</span>
                   </Link>
-                </div>
-
-                {/* Main Navigation */}
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <Settings className="w-4 h-4" />
-                    Management
-                  </div>
-                  <div className="space-y-1">
-                    {adminSidebarRoutes
-                      .filter(route => route.route !== "/dashboard")
-                      .map((item) => (
-                        <Link
-                          key={item.route}
-                          href={item.route}
-                          className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all group ${
-                            pathname === item.route
-                              ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          <div className={`transition-colors ${
-                            pathname === item.route ? "text-blue-600" : "text-gray-500 group-hover:text-gray-700"
-                          }`}>
-                            {item.icon}
-                          </div>
-                          <span>{item.name}</span>
-                        </Link>
-                      ))}
-                  </div>
-                </div>
-
-                {/* Security Section */}
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <Shield className="w-4 h-4" />
-                    Security
-                  </div>
-                  <Link
-                    href="/dashboard/security"
-                    className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all ${
-                      pathname === "/dashboard/security"
-                        ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Shield className="w-5 h-5" />
-                    <span>Security Dashboard</span>
-                  </Link>
-                </div>
+                ))}
               </nav>
 
               {/* Sidebar Footer */}
-              <div className="p-4 border-t border-gray-200/50">
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Zenow Academy</p>
-                      <p className="text-xs text-gray-500">v2.0.1</p>
-                    </div>
+              <div className="flex-shrink-0 p-3 sm:p-4 border-t border-gray-200/50">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
+                    <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                   </div>
-                  <p className="text-xs text-gray-600">
-                    Enterprise-grade learning management system
-                  </p>
+                  <span className="truncate">Zenow Academy v2.0.1</span>
                 </div>
               </div>
             </motion.aside>
           )}
         </AnimatePresence>
 
-        {/* Main Content */}
-        <main className="flex-1 min-h-screen">
-          <div className="p-6">
-            {/* Page Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {adminSidebarRoutes.find((r) => r.route === pathname)?.name || "Dashboard"}
-                  </h1>
-                  <p className="text-gray-600">
-                    {pathname === "/dashboard" 
-                      ? "Welcome back! Here's what's happening with your academy today."
-                      : `Manage and monitor your ${adminSidebarRoutes.find((r) => r.route === pathname)?.name.toLowerCase() || "content"} from here.`
-                    }
-                  </p>
-                </div>
-                
-                {/* Quick Actions */}
-                <div className="flex items-center gap-3">
-                  <button className="px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                    <Settings className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg">
-                    Quick Action
-                  </button>
-                </div>
-              </div>
-            </div>
-
+        {/* Main Content - Scrollable */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
             {/* Content */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              {children}
-            </div>
+            {children}
           </div>
         </main>
       </div>
@@ -299,7 +199,7 @@ export default function DashboardLayout({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden"
             onClick={toggleSidebar}
           />
         )}

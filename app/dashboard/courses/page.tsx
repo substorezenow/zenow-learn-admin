@@ -233,15 +233,15 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Courses Management</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Courses</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+          className="group relative flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
-          <span className="font-semibold">Add Course</span>
+          <span className="font-semibold text-sm sm:text-base">Add Course</span>
           <div className="absolute inset-0 bg-white rounded-lg opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
         </button>
       </div>
@@ -295,25 +295,25 @@ export default function CoursesPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Course
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Category / Field
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Difficulty
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden lg:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Price
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden xl:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Students
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -325,65 +325,67 @@ export default function CoursesPage() {
                   className="group hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 hover:shadow-sm border-b border-gray-100 hover:border-gray-200"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-12 w-12 group-hover:scale-105 transition-transform duration-200">
+                      <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 group-hover:scale-105 transition-transform duration-200">
                         {course.thumbnail_image ? (
                           <Image
-                            className="h-12 w-12 rounded-lg object-cover shadow-sm group-hover:shadow-md transition-shadow duration-200"
+                            className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 rounded-lg object-cover shadow-sm group-hover:shadow-md transition-shadow duration-200"
                             src={course.thumbnail_image || ""}
                             alt={course.title}
                             width={48}
                             height={48}
                           />
                         ) : (
-                          <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
-                            <BookOpen className="w-6 h-6 text-gray-600 group-hover:text-gray-700 transition-colors duration-200" />
+                          <div className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-gray-600 group-hover:text-gray-700 transition-colors duration-200" />
                           </div>
                         )}
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                      <div className="ml-1 sm:ml-2 lg:ml-4 min-w-0 flex-1">
+                        <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                           {course.title}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {course.short_description}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {course.duration_hours}h • {course.slug}
+                        {course.short_description && course.short_description.trim() && (
+                          <div className="text-xs text-gray-500 truncate hidden sm:block">
+                            {course.short_description}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {course.duration_hours}h • {course.category_name}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                  <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
+                    <div className="text-xs sm:text-sm text-gray-900">
                       {course.category_name}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs text-gray-500">
                       {course.field_name}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(
+                      className={`inline-flex px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-semibold rounded-full ${getDifficultyColor(
                         course.difficulty_level || "beginner"
                       )}`}
                     >
                       {course.difficulty_level || "Beginner"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                     {course.is_free ? (
                       <span className="text-green-600 font-medium">Free</span>
                     ) : (
                       `$${course.price}`
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                     <button
                       onClick={() => handleTogglePublished(course)}
                       disabled={togglingCourseId === course.id}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
+                      className={`inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
                         togglingCourseId === course.id
                           ? "bg-gray-100 text-gray-500 cursor-not-allowed"
                           : course.is_published
@@ -393,23 +395,23 @@ export default function CoursesPage() {
                     >
                       {togglingCourseId === course.id ? (
                         <>
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          <span>Updating...</span>
+                          <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" />
+                          <span className="hidden sm:inline">Updating...</span>
                         </>
                       ) : course.is_published ? (
                         <>
-                          <Eye className="w-3 h-3" />
-                          <span>Published</span>
+                          <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          <span className="hidden sm:inline">Published</span>
                         </>
                       ) : (
                         <>
-                          <EyeOff className="w-3 h-3" />
-                          <span>Draft</span>
+                          <EyeOff className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          <span className="hidden sm:inline">Draft</span>
                         </>
                       )}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="hidden xl:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                     <div className="flex items-center">
                       <span>{course.enrolled_students}</span>
                       {course.rating && course.rating > 0 && (
@@ -420,20 +422,20 @@ export default function CoursesPage() {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-1">
+                  <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
+                    <div className="flex items-center gap-0.5 sm:gap-1">
                       <button
                         onClick={() => setEditingCourse(course)}
-                        className="group relative p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                        className="group relative p-1 sm:p-1.5 lg:p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
                         title="Edit course"
                       >
-                        <Edit className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                        <Edit className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
                         <div className="absolute inset-0 bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                       </button>
                       <button
                         onClick={() => handleDeleteCourse(course.id)}
                         disabled={deletingCourseId === course.id}
-                        className={`group relative p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+                        className={`group relative p-1 sm:p-1.5 lg:p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
                           deletingCourseId === course.id
                             ? "text-gray-400 cursor-not-allowed"
                             : "text-red-600 hover:text-red-900 hover:bg-red-50"
@@ -441,10 +443,10 @@ export default function CoursesPage() {
                         title="Delete course"
                       >
                         {deletingCourseId === course.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                         ) : (
                           <>
-                            <Trash2 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
                             <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                           </>
                         )}

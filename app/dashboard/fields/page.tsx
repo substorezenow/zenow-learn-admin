@@ -150,15 +150,15 @@ export default function FieldsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Fields Management</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Fields</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+          className="group relative flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
-          <span className="font-semibold">Add Field</span>
+          <span className="font-semibold text-sm sm:text-base">Add Field</span>
           <div className="absolute inset-0 bg-white rounded-lg opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
         </button>
       </div>
@@ -168,25 +168,25 @@ export default function FieldsPage() {
           <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Field
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Category
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Slug
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Courses
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden xl:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Sort Order
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -198,46 +198,49 @@ export default function FieldsPage() {
                 className="group hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 hover:shadow-sm border-b border-gray-100 hover:border-gray-200"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 group-hover:scale-105 transition-transform duration-200">
+                    <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 group-hover:scale-105 transition-transform duration-200">
                       {field.icon_url ? (
                         <Image 
-                          className="h-10 w-10 rounded-full shadow-sm group-hover:shadow-md transition-shadow duration-200" 
+                          className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-full shadow-sm group-hover:shadow-md transition-shadow duration-200" 
                           src={field.icon_url} 
                           alt={field.name}
                           width={40}
                           height={40}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
-                          <Layers className="w-5 h-5 text-gray-600 group-hover:text-gray-700 transition-colors duration-200" />
+                        <div className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+                          <Layers className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-gray-600 group-hover:text-gray-700 transition-colors duration-200" />
                         </div>
                       )}
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{field.name}</div>
-                      <div className="text-sm text-gray-500">{field.description}</div>
+                    <div className="ml-1 sm:ml-2 lg:ml-4 min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{field.name}</div>
+                      {field.description && field.description.trim() && (
+                        <div className="text-xs text-gray-500 truncate hidden sm:block">{field.description}</div>
+                      )}
+                      <div className="sm:hidden text-xs text-gray-400 mt-0.5">{field.category_name}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{field.category_name}</div>
-                  <div className="text-sm text-gray-500">{field.category_slug}</div>
+                <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
+                  <div className="text-xs sm:text-sm text-gray-900">{field.category_name}</div>
+                  <div className="text-xs text-gray-500">{field.category_slug}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                   {field.slug}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <td className="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4">
+                  <span className="inline-flex items-center px-1.5 sm:px-2 lg:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {field.course_count} courses
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <button
                     onClick={() => handleToggleActive(field)}
                     disabled={togglingFieldId === field.id}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
+                    className={`inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
                       togglingFieldId === field.id
                         ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
                         : field.is_active
@@ -247,39 +250,39 @@ export default function FieldsPage() {
                   >
                     {togglingFieldId === field.id ? (
                       <>
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>Updating...</span>
+                        <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" />
+                        <span className="hidden sm:inline">Updating...</span>
                       </>
                     ) : field.is_active ? (
                       <>
-                        <Eye className="w-3 h-3" />
-                        <span>Active</span>
+                        <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="hidden sm:inline">Active</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="w-3 h-3" />
-                        <span>Inactive</span>
+                        <EyeOff className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="hidden sm:inline">Inactive</span>
                       </>
                     )}
                   </button>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="hidden xl:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                   {field.sort_order}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center gap-1">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
+                  <div className="flex items-center gap-0.5 sm:gap-1">
                     <button
                       onClick={() => setEditingField(field)}
-                      className="group relative p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                      className="group relative p-1 sm:p-1.5 lg:p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
                       title="Edit field"
                     >
-                      <Edit className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
                       <div className="absolute inset-0 bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                     </button>
                     <button
                       onClick={() => handleDeleteField(field.id)}
                       disabled={deletingFieldId === field.id}
-                      className={`group relative p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+                      className={`group relative p-1 sm:p-1.5 lg:p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
                         deletingFieldId === field.id
                           ? 'text-gray-400 cursor-not-allowed'
                           : 'text-red-600 hover:text-red-900 hover:bg-red-50'
@@ -287,10 +290,10 @@ export default function FieldsPage() {
                       title="Delete field"
                     >
                       {deletingFieldId === field.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                       ) : (
                         <>
-                          <Trash2 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
                           <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                         </>
                       )}

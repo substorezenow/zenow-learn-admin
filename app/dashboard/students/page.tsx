@@ -93,22 +93,22 @@ export default function StudentsPage() {
           <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Student
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Contact
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Enrollment Stats
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Joined
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -116,31 +116,32 @@ export default function StudentsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {students.map((student) => (
               <tr key={student.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <Users className="w-5 h-5 text-blue-600" />
+                    <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10">
+                      <div className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Users className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-blue-600" />
                       </div>
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
+                    <div className="ml-1 sm:ml-2 lg:ml-4 min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                         {student.first_name} {student.last_name}
                       </div>
-                      <div className="text-sm text-gray-500">@{student.username}</div>
+                      <div className="text-xs text-gray-500">@{student.username}</div>
+                      <div className="sm:hidden text-xs text-gray-400 mt-0.5">{student.email}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center text-sm text-gray-900">
-                    <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
+                  <div className="flex items-center text-xs sm:text-sm text-gray-900">
+                    <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-400" />
                     {student.email}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
+                  <div className="text-xs sm:text-sm text-gray-900">
                     <div className="flex items-center">
-                      <BookOpen className="w-4 h-4 mr-2 text-green-500" />
+                      <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
                       {student.enrolled_courses || 0} enrolled
                     </div>
                     <div className="text-xs text-gray-500">
@@ -148,8 +149,8 @@ export default function StudentsPage() {
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
+                  <span className={`inline-flex items-center px-1.5 sm:px-2 lg:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     student.is_active
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
@@ -157,15 +158,16 @@ export default function StudentsPage() {
                     {student.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500">
                   <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2" />
+                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     {new Date(student.created_at).toLocaleDateString()}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button className="text-indigo-600 hover:text-indigo-900">
-                    <Eye className="w-4 h-4" />
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
+                  <button className="group relative p-1 sm:p-1.5 lg:p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95" title="View student">
+                    <Eye className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
+                    <div className="absolute inset-0 bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                   </button>
                 </td>
               </tr>

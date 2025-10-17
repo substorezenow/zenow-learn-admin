@@ -136,22 +136,22 @@ export default function BlogsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Blog Post
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Author
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Stats
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Published
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -159,36 +159,39 @@ export default function BlogsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {blogs.map((blog) => (
               <tr key={blog.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
+                    <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10">
                       {blog.featured_image ? (
                         <Image 
-                          className="h-10 w-10 rounded-lg object-cover" 
+                          className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-lg object-cover" 
                           src={blog.featured_image} 
                           alt={blog.title}
                           width={40}
                           height={40}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-lg bg-gray-300 flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-gray-600" />
+                        <div className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-lg bg-gray-300 flex items-center justify-center">
+                          <FileText className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-gray-600" />
                         </div>
                       )}
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{blog.title}</div>
-                      <div className="text-sm text-gray-500">{blog.excerpt}</div>
+                    <div className="ml-1 sm:ml-2 lg:ml-4 min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{blog.title}</div>
+                      {blog.excerpt && blog.excerpt.trim() && (
+                        <div className="text-xs text-gray-500 truncate hidden sm:block">{blog.excerpt}</div>
+                      )}
+                      <div className="sm:hidden text-xs text-gray-400 mt-0.5">{blog.author}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                   {blog.author}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <button
                     onClick={() => handleTogglePublished(blog)}
-                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    className={`inline-flex items-center gap-1 px-1.5 sm:px-2 lg:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       blog.is_published
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
@@ -196,46 +199,50 @@ export default function BlogsPage() {
                   >
                     {blog.is_published ? (
                       <>
-                        <Eye className="w-3 h-3" />
-                        Published
+                        <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="hidden sm:inline">Published</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="w-3 h-3" />
-                        Draft
+                        <EyeOff className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="hidden sm:inline">Draft</span>
                       </>
                     )}
                   </button>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                   <div className="text-xs">
                     <div>{blog.views || 0} views</div>
                     <div>{blog.likes} likes</div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500">
                   {blog.published_at ? (
                     <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       {new Date(blog.published_at).toLocaleDateString()}
                     </div>
                   ) : (
                     <span className="text-gray-400">Not published</span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center gap-2">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
+                  <div className="flex items-center gap-0.5 sm:gap-1">
                     <button
                       onClick={() => setEditingBlog(blog)}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="group relative p-1 sm:p-1.5 lg:p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                      title="Edit blog"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
+                      <div className="absolute inset-0 bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                     </button>
                     <button
                       onClick={() => handleDeleteBlog(blog.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="group relative p-1 sm:p-1.5 lg:p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                      title="Delete blog"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
+                      <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                     </button>
                   </div>
                 </td>

@@ -147,22 +147,22 @@ export default function ModulesPage() {
           <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Module
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden sm:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Course
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Type
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Duration
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="hidden lg:table-cell px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Order
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 sm:px-3 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -170,22 +170,25 @@ export default function ModulesPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {modules.map((module) => (
               <tr key={module.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
+                    <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10">
                       {getModuleIcon(module.module_type || 'video')}
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{module.title}</div>
-                      <div className="text-sm text-gray-500">{module.description}</div>
+                    <div className="ml-1 sm:ml-2 lg:ml-4 min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{module.title}</div>
+                      {module.description && module.description.trim() && (
+                        <div className="text-xs text-gray-500 truncate hidden sm:block">{module.description}</div>
+                      )}
+                      <div className="sm:hidden text-xs text-gray-400 mt-0.5">{module.course_title}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{module.course_title}</div>
+                <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
+                  {module.course_title}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
+                  <span className={`inline-flex items-center px-1.5 sm:px-2 lg:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     module.module_type === 'video' ? 'bg-red-100 text-red-800' :
                     module.module_type === 'text' ? 'bg-blue-100 text-blue-800' :
                     module.module_type === 'quiz' ? 'bg-green-100 text-green-800' :
@@ -194,24 +197,26 @@ export default function ModulesPage() {
                     {module.module_type}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                   {module.duration_minutes} min
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900">
                   {module.sort_order}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center gap-2">
+                <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
+                  <div className="flex items-center gap-0.5 sm:gap-1">
                     <button
                       onClick={() => setEditingModule(module)}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="group relative p-1 sm:p-1.5 lg:p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                      title="Edit module"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
+                      <div className="absolute inset-0 bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                     </button>
                     <button
                       onClick={() => handleDeleteModule(module.id)}
                       disabled={deletingModuleId === module.id}
-                      className={`group relative p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+                      className={`group relative p-1 sm:p-1.5 lg:p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
                         deletingModuleId === module.id
                           ? 'text-gray-400 cursor-not-allowed'
                           : 'text-red-600 hover:text-red-900 hover:bg-red-50'
@@ -219,10 +224,10 @@ export default function ModulesPage() {
                       title="Delete module"
                     >
                       {deletingModuleId === module.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                       ) : (
                         <>
-                          <Trash2 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:rotate-12" />
                           <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                         </>
                       )}
