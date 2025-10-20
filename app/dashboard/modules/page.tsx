@@ -130,14 +130,14 @@ export default function ModulesPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Course Modules Management</h1>
+      <div className="flex justify-between items-center gap-4 mb-4">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Modules</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+          className="group relative flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 flex-shrink-0"
         >
           <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
-          <span className="font-semibold">Add Module</span>
+          <span className="font-semibold text-sm sm:text-base">Add Module</span>
           <div className="absolute inset-0 bg-white rounded-lg opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
         </button>
       </div>

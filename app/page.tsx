@@ -7,7 +7,7 @@ export default function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       window.location.href = "/login";
-    },3000);
+    }, 100);
     return () => clearTimeout(timer);
   }, []);
   return (

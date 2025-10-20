@@ -81,9 +81,9 @@ export default function StudentsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Students Management</h1>
-        <div className="text-sm text-gray-500">
+      <div className="flex justify-between items-center gap-4 mb-4">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Students</h1>
+        <div className="text-sm text-gray-500 flex-shrink-0">
           Total Students: {students.length}
         </div>
       </div>
