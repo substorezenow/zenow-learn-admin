@@ -40,6 +40,8 @@ export type {
   CourseModule,
   Blog,
   Student,
+  Enrollment,
+  EnrollmentStats,
   AdminStats,
   
   // Create request types
@@ -53,6 +55,10 @@ export type {
   UpdateFieldRequest,
   UpdateCourseRequest,
   UpdateModuleRequest,
+  UpdateEnrollmentRequest,
+  
+  // Filter types
+  EnrollmentFilters,
   
   // Form data types
   CategoryFormData,

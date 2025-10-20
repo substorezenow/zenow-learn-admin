@@ -5,6 +5,11 @@ import type {
   Field,
   Course,
   CourseModule,
+  Student,
+  Enrollment,
+  EnrollmentStats,
+  EnrollmentFilters,
+  UpdateEnrollmentRequest,
   AdminStats,
   CreateCategoryRequest,
   UpdateCategoryRequest,
@@ -275,6 +280,120 @@ class AdminApiService {
   // Alias for deleteModule (used by modules page)
   async deleteCourseModule(moduleId: string | number): Promise<ApiResponse> {
     return this.deleteModule(moduleId);
+  }
+
+  // ==================== ENROLLMENT MANAGEMENT ====================
+  
+  async getEnrollments(filters: EnrollmentFilters = {}): Promise<ApiResponse<Enrollment[]>> {
+    const queryParams = new URLSearchParams();
+    
+    if (filters.status) queryParams.append('status', filters.status);
+    if (filters.course_id) queryParams.append('course_id', filters.course_id.toString());
+    if (filters.student_id) queryParams.append('student_id', filters.student_id);
+    if (filters.page) queryParams.append('page', filters.page.toString());
+    if (filters.limit) queryParams.append('limit', filters.limit.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/admin/enrollments${queryString ? `?${queryString}` : ''}`;
+    
+    return this.request<Enrollment[]>(endpoint);
+  }
+
+  async getEnrollmentStats(): Promise<ApiResponse<EnrollmentStats>> {
+    return this.request<EnrollmentStats>('/admin/enrollments/stats');
+  }
+
+  async getEnrollmentById(id: string | number): Promise<ApiResponse<Enrollment>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid enrollment ID');
+    }
+    
+    return this.request<Enrollment>(`/admin/enrollments/${stringId}`);
+  }
+
+  async updateEnrollmentStatus(id: string | number, data: UpdateEnrollmentRequest): Promise<ApiResponse<Enrollment>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid enrollment ID');
+    }
+    
+    return this.request<Enrollment>(`/admin/enrollments/${stringId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteEnrollment(id: string | number): Promise<ApiResponse> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid enrollment ID');
+    }
+    
+    return this.request(`/admin/enrollments/${stringId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ==================== STUDENT MANAGEMENT ====================
+  
+  async getStudents(filters: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: 'active' | 'inactive';
+    sort?: string;
+    order?: 'asc' | 'desc';
+  } = {}): Promise<ApiResponse<Student[]>> {
+    const queryParams = new URLSearchParams();
+    
+    if (filters.page) queryParams.append('page', filters.page.toString());
+    if (filters.limit) queryParams.append('limit', filters.limit.toString());
+    if (filters.search) queryParams.append('search', filters.search);
+    if (filters.status) queryParams.append('status', filters.status);
+    if (filters.sort) queryParams.append('sort', filters.sort);
+    if (filters.order) queryParams.append('order', filters.order);
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/admin/students${queryString ? `?${queryString}` : ''}`;
+    
+    return this.request<Student[]>(endpoint);
+  }
+
+  async getStudentStats(): Promise<ApiResponse<{
+    total_students: number;
+    active_students: number;
+    inactive_students: number;
+    verified_students: number;
+    students_last_30_days: number;
+    total_enrollments: number;
+    completed_courses: number;
+  }>> {
+    return this.request('/admin/students/stats');
+  }
+
+  async getStudentById(id: string | number): Promise<ApiResponse<Student>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid student ID');
+    }
+    
+    return this.request<Student>(`/admin/students/${stringId}`);
+  }
+
+  async updateStudentStatus(id: string | number, data: {
+    is_active?: boolean;
+    email_verified?: boolean;
+  }): Promise<ApiResponse<Student>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid student ID');
+    }
+    
+    return this.request<Student>(`/admin/students/${stringId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
   public clearSession(): void {

@@ -138,6 +138,54 @@ export interface Student {
   role?: string; // Additional field for UI
 }
 
+export interface Enrollment {
+  id: ID;
+  user_id: string;
+  course_id: number;
+  enrollment_type: 'course' | 'bundle';
+  enrollment_date: string;
+  completion_percentage: number;
+  last_accessed: string;
+  is_completed: boolean;
+  completion_date?: string;
+  // Student information
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  student_id?: string;
+  // Course information
+  course_title?: string;
+  course_slug?: string;
+  course_description?: string;
+  course_price?: number;
+  is_free?: boolean;
+  field_name?: string;
+  category_name?: string;
+}
+
+export interface EnrollmentStats {
+  total_enrollments: number;
+  completed_enrollments: number;
+  in_progress_enrollments: number;
+  not_started_enrollments: number;
+  enrollments_last_30_days: number;
+  avg_completion_percentage: number;
+}
+
+export interface EnrollmentFilters {
+  status?: 'completed' | 'in_progress' | 'not_started';
+  course_id?: number;
+  student_id?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface UpdateEnrollmentRequest {
+  is_completed?: boolean;
+  completion_percentage?: number;
+  completion_date?: string;
+}
+
 export interface AdminStats {
   total_categories: number;
   total_fields: number;

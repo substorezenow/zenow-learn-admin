@@ -9,7 +9,8 @@ import {
   BarChart3,
   Users,
   FileText,
-  Shield
+  Shield,
+  UserCheck
 } from "lucide-react";
 
 export const sidebarRoutes = [
@@ -56,7 +57,13 @@ export const adminSidebarRoutes = [
     route: "/dashboard/students",
     name: "Students",
     icon: <Users className="w-5 h-5" />,
-    description: "Manage student enrollments"
+    description: "Manage student accounts"
+  },
+  {
+    route: "/dashboard/enrollments",
+    name: "Enrollments",
+    icon: <UserCheck className="w-5 h-5" />,
+    description: "Manage course enrollments"
   },
   {
     route: "/dashboard/blogs",
