@@ -66,11 +66,17 @@ export const adminSidebarRoutes = [
     description: "Manage course enrollments"
   },
   {
+    route: "/dashboard/blog-categories",
+    name: "Blog Categories",
+    icon: <FileText className="w-5 h-5" />,
+    description: "Manage blog categories"
+  },
+  {
     route: "/dashboard/blogs",
     name: "Blogs",
     icon: <FileText className="w-5 h-5" />,
     description: "Manage blog content"
-  },
+  }, 
   {
     route: "/dashboard/security",
     name: "Security Dashboard",

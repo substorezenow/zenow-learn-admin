@@ -116,6 +116,44 @@ export const ValidationSchemas = {
     is_published: z.boolean().optional(),
   }),
 
+  // Blog Form Validation
+  validateBlog: z.object({
+    title: z.string()
+      .min(2, "Blog title must be at least 2 characters long")
+      .max(200, "Blog title cannot exceed 200 characters"),
+    slug: slugValidation.optional(),
+    content: z.string()
+      .min(10, "Blog content must be at least 10 characters long")
+      .max(50000, "Blog content cannot exceed 50000 characters"),
+    excerpt: z.string().max(500, "Excerpt cannot exceed 500 characters").optional().or(z.literal('')),
+    featured_image: optionalUrl,
+    author_id: z.string().uuid("Invalid author ID format").optional().or(z.literal('')),
+    status: z.enum(['draft', 'published', 'archived']).optional(),
+    published_at: z.string().optional().or(z.literal('')),
+    tags: z.union([z.string().optional(), z.array(z.string())]).optional(),
+    category_id: idValidation.optional(), // Accepts both string and number
+    read_time: z.union([
+      z.number().int("Read time must be an integer").min(0, "Read time cannot be negative").max(120, "Read time cannot exceed 120 minutes"),
+      z.string().regex(/^\d+$/, "Read time must be numeric").refine(val => parseInt(val) >= 0 && parseInt(val) <= 120, "Read time must be between 0 and 120 minutes")
+    ]).optional(),
+  }),
+
+  // Blog Category Form Validation
+  validateBlogCategory: z.object({
+    name: z.string()
+      .min(2, "Category name must be at least 2 characters long")
+      .max(100, "Category name cannot exceed 100 characters"),
+    slug: slugValidation.optional(),
+    description: z.string().max(1000, "Description cannot exceed 1000 characters").optional().or(z.literal('')),
+    icon_url: optionalUrl,
+    banner_image: optionalUrl,
+    sort_order: z.union([
+      z.number().int("Sort order must be an integer").min(0, "Sort order cannot be negative"),
+      z.string().regex(/^\d+$/, "Sort order must be numeric").refine(val => parseInt(val) >= 0, "Sort order cannot be negative")
+    ]).optional(),
+    is_active: z.boolean().optional(),
+  }),
+
   // Login Form Validation
   validateLogin: z.object({
     username: z.string()

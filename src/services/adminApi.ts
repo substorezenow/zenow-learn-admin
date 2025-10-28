@@ -18,8 +18,18 @@ import type {
   CreateCourseRequest,
   UpdateCourseRequest,
   CreateModuleRequest,
-  UpdateModuleRequest
-} from '../types';
+  UpdateModuleRequest,
+  Blog,
+  BlogCategory,
+  BlogsResponse,
+  CreateBlogRequest,
+  UpdateBlogRequest,
+  CreateBlogCategoryRequest,
+  UpdateBlogCategoryRequest,
+  AdminUser,
+  UpdateAdminProfileRequest,
+  ChangePasswordRequest
+} from '../types/api';
 
 // Request options interface (only interface needed in this file)
 interface RequestOptions {
@@ -211,6 +221,36 @@ class AdminApiService {
     });
   }
 
+  // Profile management methods
+  async getProfile(): Promise<ApiResponse<AdminUser>> {
+    return this.request<AdminUser>("/admin/profile");
+  }
+
+  async updateProfile(data: UpdateAdminProfileRequest): Promise<ApiResponse<AdminUser>> {
+    return this.request<AdminUser>("/admin/profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(data: ChangePasswordRequest): Promise<ApiResponse> {
+    return this.request("/admin/profile/password", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async uploadProfileImage(file: File): Promise<ApiResponse<{ profile_image: string }>> {
+    const formData = new FormData();
+    formData.append("profile_image", file);
+    
+    return this.request<{ profile_image: string }>("/admin/profile/image", {
+      method: "POST",
+      headers: {}, // Remove Content-Type to let browser set it for FormData
+      body: formData,
+    });
+  }
+
   async rollbackMigration(): Promise<ApiResponse> {
     return this.request("/admin/migrations/rollback", {
       method: "POST",
@@ -393,6 +433,113 @@ class AdminApiService {
     return this.request<Student>(`/admin/students/${stringId}/status`, {
       method: 'PUT',
       body: JSON.stringify(data),
+    });
+  }
+
+  // ==================== BLOG MANAGEMENT ====================
+  
+  async getBlogs(filters: {
+    page?: number;
+    limit?: number;
+    status?: 'draft' | 'published' | 'archived';
+    category_id?: number;
+    author_id?: string;
+  } = {}): Promise<ApiResponse<BlogsResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    if (filters.page) queryParams.append('page', filters.page.toString());
+    if (filters.limit) queryParams.append('limit', filters.limit.toString());
+    if (filters.status) queryParams.append('status', filters.status);
+    if (filters.category_id) queryParams.append('category_id', filters.category_id.toString());
+    if (filters.author_id) queryParams.append('author_id', filters.author_id);
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/admin/blogs${queryString ? `?${queryString}` : ''}`;
+    
+    return this.request<BlogsResponse>(endpoint);
+  }
+
+  async getBlogById(id: string | number): Promise<ApiResponse<Blog>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid blog ID');
+    }
+    
+    return this.request<Blog>(`/admin/blogs/${stringId}`);
+  }
+
+  async createBlog(data: CreateBlogRequest): Promise<ApiResponse<Blog>> {
+    return this.request<Blog>("/admin/blogs", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateBlog(id: string | number, data: UpdateBlogRequest): Promise<ApiResponse<Blog>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid blog ID');
+    }
+    
+    return this.request<Blog>(`/admin/blogs/${stringId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteBlog(id: string | number): Promise<ApiResponse> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid blog ID');
+    }
+    
+    return this.request(`/admin/blogs/${stringId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ==================== BLOG CATEGORIES MANAGEMENT ====================
+  
+  async getBlogCategories(): Promise<ApiResponse<BlogCategory[]>> {
+    return this.request<BlogCategory[]>("/admin/blog-categories");
+  }
+
+  async getBlogCategoryById(id: string | number): Promise<ApiResponse<BlogCategory>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid blog category ID');
+    }
+    
+    return this.request<BlogCategory>(`/admin/blog-categories/${stringId}`);
+  }
+
+  async createBlogCategory(data: CreateBlogCategoryRequest): Promise<ApiResponse<BlogCategory>> {
+    return this.request<BlogCategory>("/admin/blog-categories", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateBlogCategory(id: string | number, data: UpdateBlogCategoryRequest): Promise<ApiResponse<BlogCategory>> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid blog category ID');
+    }
+    
+    return this.request<BlogCategory>(`/admin/blog-categories/${stringId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteBlogCategory(id: string | number): Promise<ApiResponse> {
+    const stringId = String(id);
+    if (!stringId || stringId === 'NaN') {
+      throw new Error('Invalid blog category ID');
+    }
+    
+    return this.request(`/admin/blog-categories/${stringId}`, {
+      method: "DELETE",
     });
   }
 

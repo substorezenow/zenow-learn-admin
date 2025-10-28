@@ -39,6 +39,7 @@ export type {
   Course,
   CourseModule,
   Blog,
+  BlogCategory,
   Student,
   Enrollment,
   EnrollmentStats,
@@ -49,6 +50,8 @@ export type {
   CreateFieldRequest,
   CreateCourseRequest,
   CreateModuleRequest,
+  CreateBlogRequest,
+  CreateBlogCategoryRequest,
   
   // Update request types
   UpdateCategoryRequest,
@@ -56,6 +59,8 @@ export type {
   UpdateCourseRequest,
   UpdateModuleRequest,
   UpdateEnrollmentRequest,
+  UpdateBlogRequest,
+  UpdateBlogCategoryRequest,
   
   // Filter types
   EnrollmentFilters,
@@ -64,7 +69,12 @@ export type {
   CategoryFormData,
   FieldFormData,
   CourseFormData,
-  ModuleFormData
+  ModuleFormData,
+  BlogFormData,
+  BlogCategoryFormData,
+  
+  // Response types
+  BlogsResponse
 } from './api';
 
 // ============================================================================

@@ -4,13 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, EyeOff, FileText, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import { Blog } from '../../../src/types';
+import adminApi from '../../../src/services/adminApi';
+import BlogForm from '../components/BlogForm';
 
 export default function BlogsPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [, setEditingBlog] = useState<Blog | null>(null);
+  const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
+  const [viewingBlog, setViewingBlog] = useState<Blog | null>(null);
 
   useEffect(() => {
     fetchBlogs();
@@ -19,48 +22,14 @@ export default function BlogsPage() {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      setError(null); // Clear any previous errors
-      // Mock data for now - in real implementation, you'd call an API
-      const mockBlogs: Blog[] = [
-        {
-          id: '1',
-          title: 'Getting Started with React Development',
-          slug: 'getting-started-react-development',
-          excerpt: 'Learn the fundamentals of React and start building modern web applications.',
-          content: 'Full blog content here...',
-          author_id: 'admin-1',
-          author: 'Admin User',
-          featured_image: 'https://example.com/react-blog.jpg',
-          status: 'published',
-          is_published: true,
-          published_at: '2024-01-15T10:30:00Z',
-          created_at: '2024-01-15T10:30:00Z',
-          updated_at: '2024-01-15T10:30:00Z',
-          views: 1250,
-          likes: 45
-        },
-        {
-          id: '2',
-          title: 'Advanced Node.js Patterns',
-          slug: 'advanced-nodejs-patterns',
-          excerpt: 'Explore advanced patterns and best practices in Node.js development.',
-          content: 'Full blog content here...',
-          author_id: 'admin-1',
-          author: 'Admin User',
-          featured_image: 'https://example.com/nodejs-blog.jpg',
-          status: 'draft',
-          is_published: false,
-          created_at: '2024-01-20T14:15:00Z',
-          updated_at: '2024-01-20T14:15:00Z',
-          views: 0,
-          likes: 0
-        }
-      ];
+      setError(null);
       
-      setBlogs(mockBlogs);
+      const response = await adminApi.getBlogs();
+      // Backend returns {blogs: [], pagination: {}} structure
+      setBlogs(response.data?.blogs || []);
     } catch (err) {
+      setError('Failed to fetch blogs');
       console.error('Error fetching blogs:', err);
-      setError('Error loading blogs');
     } finally {
       setLoading(false);
     }
@@ -68,19 +37,23 @@ export default function BlogsPage() {
 
   const handleTogglePublished = async (blog: Blog) => {
     try {
-      // Mock API call - in real implementation, you'd call the API
-      const updatedBlog = {
-        ...blog,
-        is_published: !blog.is_published,
-        published_at: !blog.is_published ? new Date().toISOString() : undefined
-      };
+      const newStatus = blog.status === 'published' ? 'draft' : 'published';
+      const published_at = newStatus === 'published' ? new Date().toISOString() : undefined;
       
+      await adminApi.updateBlog(blog.id, {
+        status: newStatus,
+        published_at
+      });
+      
+      // Update the local state
       setBlogs(blogs.map(b => 
-        b.id === blog.id ? updatedBlog : b
+        b.id === blog.id 
+          ? { ...b, status: newStatus, published_at: published_at || b.published_at }
+          : b
       ));
     } catch (err) {
-      console.error('Error updating blog:', err);
-      alert('Error updating blog');
+      console.error('Error toggling blog status:', err);
+      setError('Failed to update blog status');
     }
   };
 
@@ -88,12 +61,29 @@ export default function BlogsPage() {
     if (!confirm('Are you sure you want to delete this blog post?')) return;
 
     try {
-      // Mock API call - in real implementation, you'd call the API
+      await adminApi.deleteBlog(id);
       setBlogs(blogs.filter(blog => blog.id !== id));
     } catch (err) {
       console.error('Error deleting blog:', err);
-      alert('Error deleting blog');
+      setError('Failed to delete blog');
     }
+  };
+
+  const handleBlogSuccess = (blog: Blog) => {
+    if (editingBlog) {
+      // Update existing blog
+      setBlogs(blogs.map(b => b.id === blog.id ? blog : b));
+      setEditingBlog(null);
+    } else {
+      // Add new blog
+      setBlogs([blog, ...blogs]);
+      setShowCreateModal(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowCreateModal(false);
+    setEditingBlog(null);
   };
 
   if (loading) {
@@ -193,15 +183,22 @@ export default function BlogsPage() {
                   <button
                     onClick={() => handleTogglePublished(blog)}
                     className={`inline-flex items-center gap-1 px-1.5 sm:px-2 lg:px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      blog.is_published
+                      blog.status === 'published'
                         ? 'bg-green-100 text-green-800'
+                        : blog.status === 'archived'
+                        ? 'bg-red-100 text-red-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
-                    {blog.is_published ? (
+                    {blog.status === 'published' ? (
                       <>
                         <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         <span className="hidden sm:inline">Published</span>
+                      </>
+                    ) : blog.status === 'archived' ? (
+                      <>
+                        <EyeOff className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="hidden sm:inline">Archived</span>
                       </>
                     ) : (
                       <>
@@ -229,6 +226,14 @@ export default function BlogsPage() {
                 </td>
                 <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <div className="flex items-center gap-0.5 sm:gap-1">
+                    <button
+                      onClick={() => setViewingBlog(blog)}
+                      className="group relative p-1 sm:p-1.5 lg:p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
+                      title="View blog"
+                    >
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4 transition-transform group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-blue-100 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
+                    </button>
                     <button
                       onClick={() => setEditingBlog(blog)}
                       className="group relative p-1 sm:p-1.5 lg:p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95"
@@ -278,7 +283,7 @@ export default function BlogsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Published</p>
               <p className="text-2xl font-bold text-gray-900">
-                {blogs.filter(blog => blog.is_published).length}
+                {blogs.filter(blog => blog.status === 'published').length}
               </p>
             </div>
           </div>
@@ -290,7 +295,7 @@ export default function BlogsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Drafts</p>
               <p className="text-2xl font-bold text-gray-900">
-                {blogs.filter(blog => !blog.is_published).length}
+                {blogs.filter(blog => blog.status !== 'published').length}
               </p>
             </div>
           </div>
@@ -310,16 +315,24 @@ export default function BlogsPage() {
       </div>
 
       {/* Create/Edit Modal */}
-      {showCreateModal && (
+      <BlogForm
+        blog={editingBlog}
+        isOpen={showCreateModal || !!editingBlog}
+        onClose={handleCloseModal}
+        onSuccess={handleBlogSuccess}
+      />
+
+      {/* View Modal */}
+      {viewingBlog && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div 
-            className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-300"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200 rounded-t-xl px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Create New Blog Post</h2>
+              <h2 className="text-xl font-semibold text-gray-900">View Blog Post</h2>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => setViewingBlog(null)}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,17 +341,68 @@ export default function BlogsPage() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-4">
-              {/* Form would go here */}
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                  Create
-                </button>
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{viewingBlog.title}</h1>
+                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                    <span>Status: <span className={`font-medium ${viewingBlog.status === 'published' ? 'text-green-600' : 'text-yellow-600'}`}>{viewingBlog.status}</span></span>
+                    <span>Read time: {viewingBlog.read_time} min</span>
+                    {viewingBlog.published_at && (
+                      <span>Published: {new Date(viewingBlog.published_at).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+
+                {viewingBlog.featured_image && (
+                  <div className="relative w-full h-64 rounded-lg overflow-hidden">
+                    <Image
+                      src={viewingBlog.featured_image}
+                      alt={viewingBlog.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+
+                {viewingBlog.excerpt && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Excerpt</h3>
+                    <p className="text-gray-700 italic">{viewingBlog.excerpt}</p>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Content</h3>
+                  <div 
+                    className="prose max-w-none text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: viewingBlog.content }}
+                  />
+                </div>
+
+                {viewingBlog.tags && viewingBlog.tags.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Tags</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {viewingBlog.tags.map((tag: string, index: number) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                        >
+                          {tag.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {viewingBlog.category && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Category</h3>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">
+                      {viewingBlog.category}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -371,3 +371,160 @@ export interface ModuleFormData {
   sort_order: number;
   is_published: boolean;
 }
+
+// ============================================================================
+// BLOG TYPES
+// ============================================================================
+
+export interface BlogCategory {
+  id: ID;
+  name: string;
+  slug: string;
+  description?: string;
+  icon_url?: string;
+  banner_image?: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateBlogRequest {
+  title: string;
+  slug?: string;
+  content: string;
+  excerpt?: string;
+  featured_image?: string;
+  author_id: string;
+  status?: 'draft' | 'published' | 'archived';
+  published_at?: string;
+  tags?: string[];
+  category_id?: FlexibleID; // Accept both string and number for form compatibility
+  read_time?: number;
+}
+
+export interface UpdateBlogRequest {
+  title?: string;
+  slug?: string;
+  content?: string;
+  excerpt?: string;
+  featured_image?: string;
+  status?: 'draft' | 'published' | 'archived';
+  published_at?: string;
+  tags?: string[];
+  category_id?: FlexibleID; // Accept both string and number for form compatibility
+  read_time?: number;
+}
+
+export interface CreateBlogCategoryRequest {
+  name: string;
+  slug?: string;
+  description?: string;
+  icon_url?: string;
+  banner_image?: string;
+  sort_order?: number;
+  is_active?: boolean;
+}
+
+export interface UpdateBlogCategoryRequest {
+  name?: string;
+  slug?: string;
+  description?: string;
+  icon_url?: string;
+  banner_image?: string;
+  sort_order?: number;
+  is_active?: boolean;
+}
+
+export interface BlogFormData {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  featured_image: string;
+  author_id: string;
+  status: 'draft' | 'published' | 'archived';
+  published_at: string;
+  tags: string[];
+  category_id: FormID;
+  read_time: number;
+}
+
+export interface BlogCategoryFormData {
+  name: string;
+  slug: string;
+  description: string;
+  icon_url: string;
+  banner_image: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface BlogsResponse {
+  blogs: Blog[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+// ============================================================================
+// ADMIN PROFILE MANAGEMENT TYPES
+// ============================================================================
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  role: 'admin' | 'superuser';
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  last_login_at?: string;
+  profile_image?: string;
+  phone?: string;
+  bio?: string;
+  timezone?: string;
+  language?: string;
+}
+
+export interface UpdateAdminProfileRequest {
+  username?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  bio?: string;
+  timezone?: string;
+  language?: string;
+  profile_image?: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+export interface AdminProfileFormData {
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  bio: string;
+  timezone: string;
+  language: string;
+}
+
+export interface PasswordChangeFormData {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
