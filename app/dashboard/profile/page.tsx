@@ -21,6 +21,7 @@ import {
 import { motion } from 'framer-motion';
 import adminApiService from '../../../src/services/adminApi';
 import { AdminUser, AdminProfileFormData, PasswordChangeFormData } from '../../../src/types/api';
+import Image from 'next/image';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
@@ -281,7 +282,7 @@ export default function ProfilePage() {
               <div className="relative">
                 <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center overflow-hidden">
                   {adminUser?.profile_image ? (
-                    <img 
+                    <Image 
                       src={adminUser.profile_image} 
                       alt="Profile" 
                       className="w-full h-full object-cover"
