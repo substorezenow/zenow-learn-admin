@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, 
-  X, 
+  // X, 
   LogOut, 
   Settings, 
   User, 
@@ -130,7 +130,7 @@ export default function DashboardLayout({
               className="fixed lg:static z-50 top-0 left-0 h-full w-56 sm:w-64 lg:w-64 bg-white border-r border-gray-200 shadow-xl lg:shadow-none flex flex-col min-h-full"
             >
               {/* Sidebar Header */}
-              <div className="flex-shrink-0 p-3 sm:p-4 border-b border-gray-200/50">
+              {/* <div className="flex-shrink-0 p-3 sm:p-4 border-b border-gray-200/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
@@ -146,7 +146,7 @@ export default function DashboardLayout({
                     <X className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Navigation - Scrollable */}
               <nav className="flex-1 px-3 sm:px-4 py-3 sm:py-4 space-y-1 overflow-y-auto min-h-0">
