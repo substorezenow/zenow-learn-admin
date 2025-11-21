@@ -71,12 +71,22 @@ export default function BlogForm({ blog, isOpen, onClose, onSuccess }: BlogFormP
       setFieldValue('status', blog.status || 'draft');
       setFieldValue('published_at', blog.published_at || '');
       setFieldValue('tags', Array.isArray(blog.tags) ? blog.tags.join(', ') : blog.tags || '');
-      setFieldValue('category_id', blog.category ? blog.category.toString() : '');
+      setFieldValue('category_id', '');
       setFieldValue('read_time', blog.read_time || 0);
     } else {
       resetForm();
     }
   }, [blog, setFieldValue, resetForm]);
+
+  // Map existing blog category name to ObjectID for preselection
+  useEffect(() => {
+    if (blog && blog.category && blogCategories.length > 0) {
+      const match = blogCategories.find((c) => c.name === blog.category);
+      if (match) {
+        setFieldValue('category_id', String(match.id));
+      }
+    }
+  }, [blog, blogCategories, setFieldValue]);
 
   // Fetch blog categories
   useEffect(() => {

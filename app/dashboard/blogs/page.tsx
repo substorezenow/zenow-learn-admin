@@ -149,7 +149,7 @@ export default function BlogsPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {blogs.map((blog) => (
-              <tr key={blog.id} className="hover:bg-gray-50">
+              <tr key={blog.id ?? blog.slug} className="hover:bg-gray-50">
                 <td className="px-2 sm:px-3 lg:px-6 py-3 sm:py-4">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10">

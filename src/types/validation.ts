@@ -17,6 +17,10 @@ const idValidation = z.union([
   z.string().regex(/^\d+$/, "Must be numeric").refine(val => parseInt(val) > 0, "Must be positive")
 ]);
 
+// Mongo ObjectID validation (24 hex chars)
+const objectIdValidation = z.string().regex(/^[a-fA-F0-9]{24}$/,
+  "Invalid ID format");
+
 // URL validation (optional)
 const optionalUrl = z.string().url("Invalid URL format").optional().or(z.literal(''));
 
@@ -131,7 +135,7 @@ export const ValidationSchemas = {
     status: z.enum(['draft', 'published', 'archived']).optional(),
     published_at: z.string().optional().or(z.literal('')),
     tags: z.union([z.string().optional(), z.array(z.string())]).optional(),
-    category_id: idValidation.optional(), // Accepts both string and number
+    category_id: z.union([idValidation, objectIdValidation]).optional(),
     read_time: z.union([
       z.number().int("Read time must be an integer").min(0, "Read time cannot be negative").max(120, "Read time cannot exceed 120 minutes"),
       z.string().regex(/^\d+$/, "Read time must be numeric").refine(val => parseInt(val) >= 0 && parseInt(val) <= 120, "Read time must be between 0 and 120 minutes")

@@ -442,7 +442,7 @@ class AdminApiService {
     page?: number;
     limit?: number;
     status?: 'draft' | 'published' | 'archived';
-    category_id?: number;
+    category_id?: string;
     author_id?: string;
   } = {}): Promise<ApiResponse<BlogsResponse>> {
     const queryParams = new URLSearchParams();
@@ -450,7 +450,7 @@ class AdminApiService {
     if (filters.page) queryParams.append('page', filters.page.toString());
     if (filters.limit) queryParams.append('limit', filters.limit.toString());
     if (filters.status) queryParams.append('status', filters.status);
-    if (filters.category_id) queryParams.append('category_id', filters.category_id.toString());
+    if (filters.category_id) queryParams.append('category_id', filters.category_id);
     if (filters.author_id) queryParams.append('author_id', filters.author_id);
     
     const queryString = queryParams.toString();
